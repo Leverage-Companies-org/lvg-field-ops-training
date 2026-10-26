@@ -1,19 +1,21 @@
-# LVG Field Ops Training: setup (about 20 minutes)
+# LVG Training site: setup and maintenance
 
 Three parts, all free:
 
 | Part | What it does | Where it lives |
 |---|---|---|
-| `index.html` + `config.js` | The course. Trainees enter their name, then take the modules and final check | GitHub Pages |
-| `dashboard.html` | Matt's live results table (status, best score, attempts, modules done) | GitHub Pages, behind a key |
-| `apps-script/Code.gs` | Saves every result to a Google Sheet and DMs Matt on Slack after each final check | Google Sheet |
+| `index.html` | Home page listing every course | GitHub Pages |
+| `field-ops/`, `project-management/` | The courses. Trainees enter their name, then take the modules and final check | GitHub Pages |
+| `config.js` | The results-server URL every page reads | GitHub Pages |
+| `dashboard.html` | Matt's live results table for all courses, filterable by course (status, best score, attempts, modules done) | GitHub Pages, behind a key |
+| `Code.gs` | Saves every result to a Google Sheet and DMs Matt on Slack after each final check | Google Sheet |
 
 ---
 
 ## 1. Google Sheet + Apps Script (the results server)
 
 1. Create a new Google Sheet named **Field Ops Training Results**. Share it with Matt.
-2. In the sheet, go to **Extensions → Apps Script**. Delete the starter code, paste in everything from `apps-script/Code.gs`, and save.
+2. In the sheet, go to **Extensions → Apps Script**. Delete the starter code, paste in everything from `Code.gs`, and save.
 3. In the function dropdown, pick **setup** and click **Run**. Approve the permissions. This creates the **Trainees** and **Log** tabs and generates a `DASHBOARD_KEY`. Find the key in the execution log or under **Project Settings → Script properties**.
 4. Click **Deploy → New deployment**. For type, choose **Web app**.
    - Execute as: **Me**
@@ -78,3 +80,9 @@ Module quizzes and "mark done" clicks update the sheet and dashboard quietly. Th
 - If the network drops, results are queued and resent the next time the trainee opens the course.
 - The pass mark is 10/12. To change it, update `PASS_MARK` in both `index.html` and `Code.gs`.
 - The results endpoint is open, so it can't fully stop someone sending a fake score. If a result looks off, check the **Log** tab.
+
+## Adding another course
+
+1. Run `python3 tools/patch_course.py original.html new-course/index.html new-course "Course name" PASS_MARK`. This adds the sign-in step and score reporting.
+2. Add the course to `COURSES` in `Code.gs`, then go to **Deploy → Manage deployments → Edit → New version**.
+3. Add a card for it on the home page (`index.html`).
