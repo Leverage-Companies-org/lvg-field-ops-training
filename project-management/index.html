@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LVG Project Management Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEFF1; --surface:#FFFFFF; --soft:#E2E6EB; --ink:#17203A; --muted:#566079; --line:#CDD3DB;
+  --sign:#1D6A43; --sign-ink:#FFFFFF; --pole:#8A929E;
+  --yellow:#F2B705; --yellow-ink:#1B1B1B; --red:#B3322A; --green:#2D7A4C; --blue:#2B5DA8;
+  --focus:#2B5DA8;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1626; --surface:#172036; --soft:#1F2A44; --ink:#E6EAF1; --muted:#9BA6BB; --line:#2A3654;
+    --sign:#1F7148; --pole:#5E6778; --red:#E36A5F; --green:#5FBF89; --blue:#7FA8EA; --focus:#F2B705;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1626; --surface:#172036; --soft:#1F2A44; --ink:#E6EAF1; --muted:#9BA6BB; --line:#2A3654;
+  --sign:#1F7148; --pole:#5E6778; --red:#E36A5F; --green:#5FBF89; --blue:#7FA8EA; --focus:#F2B705;
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+h1,h2,h3,.display{font-family:"Big Shoulders Display","Arial Narrow","Roboto Condensed",Impact,sans-serif;letter-spacing:.01em;line-height:1.05}
+h2{font-size:clamp(2.1rem,5vw,3rem);margin:.2em 0 .35em;font-weight:900}
+h3{font-size:1.55rem;margin:1.8em 0 .4em;font-weight:800}
+p{margin:.6em 0}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+img{max-width:100%}
+
+/* Top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:10px 18px}
+.brand{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:1.35rem;white-space:nowrap}
+.brand span{color:var(--sign)}
+.progress{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+.bar{flex:1;height:10px;border-radius:6px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--yellow);transition:width .4s}
+.progress small{color:var(--muted);white-space:nowrap;font-size:.85rem}
+.menu-btn{display:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr);max-width:1240px;margin:0 auto}
+nav.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);align-self:start;height:calc(100vh - 56px - env(safe-area-inset-top,0px));overflow:auto;padding:22px 14px 40px 18px;border-right:1px solid var(--line)}
+nav.side ol{list-style:none;margin:0;padding:0}
+nav.side button{width:100%;text-align:left;display:flex;gap:10px;align-items:center;padding:8px 10px;border:0;border-radius:8px;background:none;color:var(--ink);font:inherit;font-size:.95rem;cursor:pointer;line-height:1.3}
+nav.side button:hover{background:var(--soft)}
+nav.side button[aria-current="true"]{background:var(--soft);font-weight:700}
+.tag{flex:none;display:inline-grid;place-items:center;min-width:30px;height:24px;padding:0 6px;border-radius:4px 4px 4px 4px;background:var(--soft);color:var(--muted);font-weight:700;font-size:.8rem;border:1px solid var(--line)}
+nav.side button.done .tag{background:var(--green);border-color:var(--green);color:#fff}
+.navgroup{color:var(--muted);font-size:.8rem;font-weight:700;margin:18px 10px 6px}
+main{padding:28px clamp(18px,4vw,56px) 80px;min-width:0}
+section.module{max-width:780px}
+section.module[hidden]{display:none}
+
+/* Module header: inspection tag */
+.mod-head{display:flex;align-items:center;gap:12px;margin-top:6px}
+.insp-tag{position:relative;display:inline-flex;align-items:center;gap:8px;background:var(--yellow);color:var(--yellow-ink);font-weight:800;font-size:.95rem;padding:5px 14px 5px 22px;border-radius:3px 6px 6px 3px;clip-path:polygon(10px 0,100% 0,100% 100%,10px 100%,0 50%)}
+.insp-tag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--bg);position:absolute;left:11px;top:50%;transform:translateY(-50%)}
+.lede{font-size:1.15rem;color:var(--muted);max-width:68ch}
+
+/* Hero signpost */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,4vw,48px);align-items:center;margin:10px 0 30px}
+.post{position:relative;width:min(400px,72vw);padding-top:10px}
+.post .pole{position:absolute;left:50%;top:0;bottom:-40px;width:14px;transform:translateX(-50%);background:linear-gradient(90deg,var(--pole),#c4c9d0 45%,var(--pole));border-radius:4px}
+.blade{position:relative;z-index:1;background:var(--sign);color:var(--sign-ink);border-radius:10px;padding:6px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.blade div{border:3px solid var(--sign-ink);border-radius:7px;padding:8px 18px 6px;font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:800;font-size:clamp(1.7rem,5.2vw,2.6rem);line-height:1;white-space:nowrap;display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.blade small{font-size:.45em;font-weight:700;opacity:.9}
+.blade.one{transform:rotate(-2deg)}
+.blade.two{margin-top:12px;transform:rotate(1.5deg) translateX(14px);width:92%}
+.hero-copy p{max-width:44ch}
+@media (max-width:760px){.hero{grid-template-columns:1fr}.post{margin:0 auto 30px}}
+
+/* Generic blocks */
+.callout{border-left:6px solid var(--yellow);background:var(--surface);padding:14px 18px;border-radius:0 10px 10px 0;margin:18px 0}
+.callout.red{border-color:var(--red)}
+.callout.green{border-color:var(--green)}
+.callout b.k{display:block;margin-bottom:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+ul.clean{padding-left:1.2em;margin:.4em 0}
+ul.clean li{margin:.3em 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:640px){.two-col{grid-template-columns:1fr}}
+.tbl-wrap{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--soft);font-weight:700}
+tr:last-child td{border-bottom:0}
+code.fmt{font-family:"Public Sans",sans-serif;font-weight:700;background:var(--soft);padding:2px 8px;border-radius:5px}
+
+/* Pillars */
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+.pillar{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--sign);border-radius:6px 6px 10px 10px;padding:14px 16px}
+.pillar h4{margin:0 0 4px;font-size:1.05rem}
+.pillar p{margin:0;color:var(--muted);font-size:.95rem}
+.streets-sheets{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch;margin:18px 0}
+.ss{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.ss h4{font-family:"Big Shoulders Display",Impact,sans-serif;font-size:1.6rem;margin:0 0 6px}
+.ss.streets h4{color:var(--sign)}
+.ss.sheets h4{color:var(--blue)}
+.plus{display:grid;place-items:center;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:2.4rem;font-weight:900;color:var(--yellow)}
+@media (max-width:640px){.streets-sheets{grid-template-columns:1fr}.plus{font-size:1.8rem}}
+
+/* Team map */
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}
+.person{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative}
+.person .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;background:var(--sign);margin-bottom:8px;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:1.3rem}
+.person h4{margin:0;font-size:1.05rem}
+.person .role{color:var(--muted);font-size:.9rem;margin:0 0 6px}
+.person ul{margin:0;padding-left:1.1em;font-size:.93rem}
+.person.you{border:2px dashed var(--yellow)}
+.person.you .av{background:var(--yellow);color:var(--yellow-ink)}
+.person.lead{border-color:var(--sign);border-width:2px}
+
+/* Route / lifecycle diagram */
+.route{position:relative;margin:22px 0 10px;padding-left:46px}
+.route::before{content:"";position:absolute;left:17px;top:6px;bottom:6px;width:8px;border-radius:4px;background:repeating-linear-gradient(180deg,var(--yellow) 0 16px,transparent 16px 26px),var(--pole)}
+.stop{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 12px}
+.stop::before{content:attr(data-n);position:absolute;left:-46px;top:10px;width:42px;height:42px;border-radius:50%;background:var(--sign);color:#fff;border:4px solid var(--bg);display:grid;place-items:center;font-weight:800;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:1.25rem}
+.stop h4{margin:0 0 2px;font-size:1.05rem}
+.stop .when{display:inline-block;font-size:.8rem;font-weight:700;background:var(--soft);border-radius:4px;padding:1px 8px;margin-bottom:4px;color:var(--muted)}
+.stop p{margin:.2em 0;font-size:.95rem}
+.stop.gate{border-color:var(--red);border-width:2px}
+.stop.gate::before{background:var(--red)}
+
+/* Flow (horizontal) */
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:16px 0}
+.flow .f{flex:1 1 140px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.92rem;position:relative}
+.flow .f b{display:block;font-size:1rem}
+.flow .arrow{flex:0 0 auto;align-self:center;color:var(--muted);font-weight:900;font-size:1.3rem}
+@media (max-width:640px){.flow{flex-direction:column}.flow .arrow{transform:rotate(90deg);align-self:center}}
+
+/* Fork diagram */
+.fork{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.fork .branch{border-radius:12px;padding:14px 16px;border:2px solid}
+.fork .pass{border-color:var(--green);background:var(--surface)}
+.fork .fail{border-color:var(--red);background:var(--surface)}
+.fork h4{margin:0 0 6px;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:1.5rem}
+.fork .pass h4{color:var(--green)} .fork .fail h4{color:var(--red)}
+@media (max-width:640px){.fork{grid-template-columns:1fr}}
+
+/* Clock / day */
+.day{display:grid;grid-template-columns:90px 1fr;gap:0;margin:16px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.day .t{padding:12px;font-weight:800;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:1.25rem;background:var(--soft);border-bottom:1px solid var(--line)}
+.day .d{padding:12px 16px;border-bottom:1px solid var(--line)}
+.day .d:last-child,.day .t:nth-last-child(2){border-bottom:0}
+
+/* Ladder */
+.ladder{display:flex;flex-direction:column-reverse;gap:8px;margin:14px 0}
+.rung{display:grid;grid-template-columns:72px 1fr;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.rung .lv{height:100%;display:grid;place-items:center;font-weight:800;color:#fff;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:1.3rem;padding:10px}
+.rung .tx{padding:10px 14px;font-size:.95rem}
+
+/* Money rules - check */
+.check{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0;position:relative;font-size:.95rem;background-image:repeating-linear-gradient(0deg,transparent 0 27px,var(--soft) 27px 28px)}
+.check .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.check .line{border-bottom:2px solid var(--ink);min-width:140px;padding:0 4px;font-weight:700}
+.check .memo{margin-top:12px}
+.check .callouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:14px}
+.check .callouts div{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:.88rem;border-left:4px solid var(--yellow)}
+
+/* Calendar format demo */
+.cal{display:flex;flex-wrap:wrap;gap:0;margin:12px 0;border-radius:10px;overflow:hidden;border:1px solid var(--line);font-weight:700}
+.cal span{padding:10px 14px;background:var(--surface)}
+.cal span.sep{background:var(--yellow);color:var(--yellow-ink);padding:10px 8px}
+.cal-lbl{display:flex;flex-wrap:wrap;gap:0;font-size:.8rem;color:var(--muted)}
+
+/* Tools grid */
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0}
+.tool{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tool h4{margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.tool .dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+.tool p{margin:.2em 0;font-size:.93rem;color:var(--muted)}
+.tool p b{color:var(--ink)}
+
+/* Do / Don't */
+.dodont{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.dodont > div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.dodont h4{margin:0 0 6px;font-size:1.05rem}
+.dodont .do h4{color:var(--green)} .dodont .dont h4{color:var(--red)}
+@media (max-width:640px){.dodont{grid-template-columns:1fr}}
+
+/* Town cards */
+.search{width:100%;font:inherit;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);margin:10px 0}
+.towns{display:grid;gap:10px}
+details.town{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+details.town summary{cursor:pointer;padding:12px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center;list-style:none}
+details.town summary::-webkit-details-marker{display:none}
+details.town summary h4{margin:0;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:1.45rem}
+details.town summary .chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.chip{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--soft);color:var(--muted);white-space:nowrap}
+.chip.y{background:var(--yellow);color:var(--yellow-ink)}
+details.town .body{padding:4px 16px 14px;border-top:1px solid var(--line)}
+details.town .body h5{margin:12px 0 4px;font-size:.95rem}
+details.town .body ol{margin:0;padding-left:1.3em;font-size:.95rem}
+
+/* Scenarios */
+.scen{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+.scen h4{margin:0 0 6px}
+.scen .where{font-size:.82rem;color:var(--muted);font-weight:700}
+.reveal{margin-top:8px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font:inherit;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer}
+.answer{margin-top:10px;border-left:5px solid var(--green);padding:8px 14px;background:var(--bg);border-radius:0 8px 8px 0}
+.answer[hidden]{display:none}
+
+/* Checklist */
+.week{margin:18px 0}
+.week h3{margin:0 0 6px}
+.week label{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin:6px 0;cursor:pointer}
+.week input{width:20px;height:20px;margin-top:3px;accent-color:var(--sign);flex:none}
+.week input:checked + span{color:var(--muted);text-decoration:line-through}
+
+/* Quiz */
+.quiz{margin:34px 0 10px;background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:18px 20px}
+.quiz > h3{margin:0 0 4px;display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.quiz > h3 small{font-family:"Public Sans",sans-serif;font-size:.9rem;font-weight:600;color:var(--muted)}
+.q{padding:14px 0;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:0}
+.q p.qt{font-weight:700;margin:0 0 8px}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font:inherit;font-size:.96rem;padding:10px 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--green);background:color-mix(in srgb,var(--green) 16%,var(--surface));font-weight:700}
+.opt.wrong{border-color:var(--red);background:color-mix(in srgb,var(--red) 14%,var(--surface))}
+.why{margin-top:8px;font-size:.93rem;color:var(--muted)}
+.why b{color:var(--ink)}
+.quiz-actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;padding:11px 18px;border-radius:10px;border:2px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.y{background:var(--yellow);border-color:var(--yellow);color:var(--yellow-ink)}
+.mod-foot{display:flex;justify-content:space-between;gap:10px;margin-top:30px;padding-top:18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.result{font-weight:700;margin-top:10px}
+
+.stamp{display:inline-block;transform:rotate(-6deg);border:4px solid var(--green);color:var(--green);font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:2rem;padding:2px 14px;border-radius:8px;margin:10px 0}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .menu-btn{display:inline-block}
+  nav.side{position:fixed;z-index:25;top:calc(env(safe-area-inset-top,0px) + 54px);left:0;width:min(320px,86vw);height:calc(100% - 54px - env(safe-area-inset-top,0px));background:var(--surface);transform:translateX(-102%);transition:transform .25s;box-shadow:4px 0 20px rgba(0,0,0,.18)}
+  nav.side.open{transform:none}
+  .progress small{display:none}
+}
+/* Trainee sign-in + reporting */
+.trainee{margin:22px 0;background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:18px 20px}
+.trainee h3{margin:0 0 6px}
+.trainee p{margin:0 0 12px;color:var(--muted)}
+.trainee .row{display:flex;gap:10px;flex-wrap:wrap}
+.trainee .row label{flex:1 1 220px;display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.92rem}
+.trainee input{font:inherit;font-weight:400;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.trainee input:focus-visible{outline:3px solid var(--focus);outline-offset:1px}
+.trainee .err{color:var(--red);font-weight:700;margin-top:8px}
+.trainee.signed{border-color:var(--green)}
+.trainee [hidden]{display:none!important}
+.trainee .who{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.linkbtn{background:none;border:0;color:var(--blue);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:0}
+.gate-note{background:var(--yellow);color:var(--yellow-ink);border-radius:10px;padding:10px 14px;font-weight:700;margin:0 0 14px}
+.sendnote{font-size:.92rem;color:var(--muted);margin-top:6px}
+.sendnote.ok{color:var(--green)}
+.sendnote.bad{color:var(--red)}
+.whoami{font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:22ch}
+.homelink{font-size:.85rem;font-weight:700;color:var(--muted);text-decoration:none;white-space:nowrap}
+.homelink:hover{color:var(--ink);text-decoration:underline}
+@media (max-width:560px){.homelink{display:none}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* PM extras */
+.blueprint{width:min(420px,82vw)}
+.blueprint svg{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+@media (max-width:760px){.blueprint{margin:0 auto 10px}}
+.sheet{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface);margin:16px 0}
+.sheet .sh-top{background:var(--sign);color:#fff;padding:8px 14px;font-weight:700;font-size:.95rem}
+.sheet .band{display:grid;grid-template-columns:44px 1fr;border-top:1px solid var(--line)}
+.sheet .band .L{display:grid;place-items:center;font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:1.5rem;color:#fff}
+.sheet .band .R{padding:10px 14px;font-size:.94rem}
+.sheet .band .R b{display:block}
+.tabs-row{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.tabs-row span{background:var(--surface);border:1px solid var(--line);border-bottom:3px solid var(--sign);padding:6px 12px;border-radius:8px 8px 0 0;font-size:.9rem;font-weight:600}
+.money-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.mf{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.92rem;position:relative}
+.mf b{display:block;font-size:1rem}
+.mf.bank{border-top:6px solid var(--blue)} .mf.lender{border-top:6px solid var(--yellow)} .mf.gc{border-top:6px solid var(--sign)} .mf.ramp{border-top:6px solid var(--red)}
+.vs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0}
+.vs div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+.vs .big{font-family:"Big Shoulders Display",Impact,sans-serif;font-size:2rem;font-weight:900;display:block}
+.vs .neg{color:var(--red)} .vs .pos{color:var(--green)}
+@media (max-width:640px){.vs{grid-template-columns:1fr}}
+.phases{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0;counter-reset:ph}
+.phases span{counter-increment:ph;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 12px 6px 8px;font-size:.9rem;font-weight:600;display:inline-flex;gap:8px;align-items:center}
+.phases span::before{content:counter(ph);display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--sign);color:#fff;font-size:.75rem}
+.phases span.insp{border-color:var(--red)} .phases span.insp::before{background:var(--red)}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sideNav">Modules</button>
+  <a class="brand" href="../" title="All LVG courses" style="color:inherit;text-decoration:none">LVG <span>Project Mgmt</span></a>
+  <a class="homelink" href="../">&larr; All courses</a>
+  <div class="progress" aria-label="Course progress">
+    <div class="bar"><i id="barFill"></i></div>
+    <small id="progText">0 of 0 done</small>
+    <small class="whoami" id="whoami"></small>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="side" id="sideNav" aria-label="Course modules"></nav>
+<main id="main">
+
+<!-- ============ WELCOME ============ -->
+<section class="module" id="welcome" data-title="Welcome" data-group="Start here">
+  <div class="hero">
+    <div class="blueprint" aria-hidden="true">
+      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <defs><pattern id="bpgrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="1"/></pattern></defs>
+        <rect width="400" height="300" rx="12" fill="#1C4E8F"/>
+        <rect width="400" height="300" rx="12" fill="url(#bpgrid)"/>
+        <line x1="30" y1="250" x2="370" y2="250" stroke="#fff" stroke-width="2"/>
+        <g stroke="#fff" stroke-width="1.6" fill="none">
+          <polyline points="65,136 200,60 200,136"/>
+          <line x1="80" y1="136" x2="200" y2="136"/><line x1="80" y1="140" x2="200" y2="140"/>
+          <line x1="80" y1="246" x2="200" y2="246"/>
+          <line x1="200" y1="60" x2="110" y2="136"/><line x1="200" y1="60" x2="140" y2="136"/><line x1="200" y1="60" x2="170" y2="136"/>
+          <line x1="132" y1="105" x2="200" y2="105"/>
+          <line x1="82" y1="140" x2="82" y2="246"/><line x1="98" y1="140" x2="98" y2="246"/><line x1="114" y1="140" x2="114" y2="246"/><line x1="130" y1="140" x2="130" y2="246"/><line x1="146" y1="140" x2="146" y2="246"/><line x1="162" y1="140" x2="162" y2="246"/><line x1="178" y1="140" x2="178" y2="246"/><line x1="194" y1="140" x2="194" y2="246"/>
+          <line x1="98" y1="180" x2="146" y2="180"/><line x1="98" y1="184" x2="146" y2="184"/>
+          <line x1="98" y1="215" x2="146" y2="215"/>
+        </g>
+        <polygon points="200,60 335,136 200,136" fill="#2C3A5C" stroke="#fff" stroke-width="1.6"/>
+        <rect x="200" y="136" width="120" height="114" fill="#F4F6F8" stroke="#fff" stroke-width="1.6"/>
+        <g stroke="#D5DBE2" stroke-width="1"><line x1="200" y1="150" x2="320" y2="150"/><line x1="200" y1="164" x2="320" y2="164"/><line x1="200" y1="178" x2="320" y2="178"/><line x1="200" y1="192" x2="320" y2="192"/><line x1="200" y1="206" x2="320" y2="206"/><line x1="200" y1="220" x2="320" y2="220"/><line x1="200" y1="234" x2="320" y2="234"/></g>
+        <rect x="222" y="156" width="40" height="36" fill="#9CC3EE" stroke="#2C3A5C" stroke-width="3"/>
+        <line x1="242" y1="156" x2="242" y2="192" stroke="#2C3A5C" stroke-width="2"/><line x1="222" y1="174" x2="262" y2="174" stroke="#2C3A5C" stroke-width="2"/>
+        <rect x="280" y="196" width="26" height="54" fill="#F2B705" stroke="#2C3A5C" stroke-width="2"/>
+        <circle cx="300" cy="224" r="2" fill="#2C3A5C"/>
+        <line x1="200" y1="44" x2="200" y2="262" stroke="#F2B705" stroke-width="2" stroke-dasharray="6 5"/>
+        <g stroke="#fff" stroke-width="1.2"><line x1="80" y1="266" x2="320" y2="266"/><line x1="80" y1="261" x2="80" y2="271"/><line x1="320" y1="261" x2="320" y2="271"/></g>
+        <text x="140" y="290" text-anchor="middle" fill="#fff" font-family="'Big Shoulders Display',Impact,sans-serif" font-weight="800" font-size="18">Framed</text>
+        <text x="260" y="290" text-anchor="middle" fill="#fff" font-family="'Big Shoulders Display',Impact,sans-serif" font-weight="800" font-size="18">Finished</text>
+      </svg>
+    </div>
+    <div class="hero-copy">
+      <h2>Welcome to Project Management.</h2>
+      <p>This side of the team runs our <b>fix and flips</b> from the day a deal goes under contract, through the purchase loan and closing, to the day we sell it. We set the budget, run the renovation, pull lender draws, pay contractors, get the house listing-ready, and close it out.</p>
+      <p>On a flip, profit is made or lost in two places: finishing <b>on time</b> and finishing <b>on budget</b>. Both start with a clear scope of work. This course teaches you how we do it.</p>
+    </div>
+  </div>
+
+  <h3>How a flip makes money</h3>
+  <div class="flow">
+    <div class="f"><b>Buy</b>Get the deal to the closing table with a purchase and rehab loan from Kiavi, Genesis, or Renovo.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Renovate</b>Catalina Contracting, our in-house team, runs the work to a clear scope. Paid through lender draws.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Make ready</b>Clean, stage, photograph, and list.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Sell</b>Profit = sale price minus purchase, renovation, holding, and closing costs.</div>
+  </div>
+  <div class="callout red"><b class="k">Why tracking matters so much</b>
+    Every untracked receipt, duplicate entry, or overpaid invoice comes straight out of profit. A $500 mistake on 11 open jobs is $5,500 gone. If the tracker is wrong, we don’t actually know whether we made money.
+  </div>
+
+  <div id="gateNote" class="gate-note" hidden>Enter your name below to start the course.</div>
+  <div class="trainee" id="traineeBox">
+    <form id="traineeForm" novalidate>
+      <h3>Who’s taking this course?</h3>
+      <p>Your quiz scores and final check result go to Matt, so use your real name.</p>
+      <div class="row">
+        <label>Full name<input id="tName" autocomplete="name" required placeholder="First and last name"></label>
+        <label>Work email<input id="tEmail" type="email" autocomplete="email" placeholder="you@leveragecompanies.com"></label>
+      </div>
+      <div class="quiz-actions"><button class="btn y" type="submit">Start the course</button></div>
+      <div class="err" id="tErr" hidden></div>
+    </form>
+    <div class="who" id="traineeWho" hidden>
+      <div><b id="whoName"></b><br><small id="whoEmail" style="color:var(--muted)"></small></div>
+      <button class="linkbtn" id="notMe" type="button">Not you? Switch trainee</button>
+    </div>
+  </div>
+
+  <h3>How this course works</h3>
+  <p>Read each module, take the quick check at the end, then mark it done. Your progress saves in this browser. Field Ops has its own course; this one covers the project side.</p>
+</section>
+
+<!-- ============ 1 LIFECYCLE ============ -->
+<section class="module" id="lifecycle" data-title="The flip, start to finish" data-group="The big picture">
+  <div class="mod-head"><span class="insp-tag">Module 1</span></div>
+  <h2>The flip, start to finish</h2>
+  <p class="lede">Every flip travels the same road. Red stops are money gates: get them wrong and it costs us directly.</p>
+
+  <div class="route">
+    <div class="stop" data-n="1"><span class="when">Day 0</span><h4>Under contract</h4><p>Deal is signed and lives in Salesforce. Note the inspection contingency, mortgage contingency, and target close dates. The loan clock starts.</p></div>
+    <div class="stop" data-n="2"><span class="when">Days 1 to 3</span><h4>Walk it, scope it, submit it</h4><p>Matt and Jerson walk the property and write the scope of work. Create the loan checklist and submit entity docs, contract, scope of work, and proof of funds to Kiavi, Genesis, or Renovo.</p></div>
+    <div class="stop gate" data-n="3"><span class="when">Weeks 1 to 3</span><h4>Underwriting, appraisal, title, insurance</h4><p>Lender orders the appraisal (as-is and ARV). Title commitment and insurance binder come in. Every prior-to-docs condition gets cleared.</p></div>
+    <div class="stop gate" data-n="4"><span class="when">Before mortgage contingency ends</span><h4>Close the purchase</h4><p>Term sheet signed, closing date set with title, wire verified by phone, closing docs signed, deed recorded.</p></div>
+    <div class="stop" data-n="5"><span class="when">At acquisition close</span><h4>Set up the deal</h4><p>Deal LLC, EIN, LLC bank account, Ramp, QuickBooks, insurance. File the HUD, loan docs, and COF in the tracker.</p></div>
+    <div class="stop" data-n="6"><span class="when">Week 1 after close</span><h4>Turn on utilities</h4><p>PSEG (or JCP&L) and water in the LLC’s name. Log every account on the PSEG/Water tab.</p></div>
+    <div class="stop gate" data-n="7"><span class="when">Week 1</span><h4>Load the approved scope</h4><p>The lender-approved scope goes into the tracker as the budget, line by line. This is the number we’re held to.</p></div>
+    <div class="stop" data-n="8"><span class="when">Weeks 1 to 2</span><h4>Contract the GC and clear the house</h4><p>Catalina assigned, crews scheduled, outside subs contracted where needed. Junk removal, tank removal, tenant relocation or cash for keys.</p></div>
+    <div class="stop gate" data-n="9"><span class="when">Weeks 2 and on</span><h4>Build and draw</h4><p>Phase by phase: photograph, invoice, draw from the lender. Every invoice and Ramp charge logged. Permits pulled and signed off.</p></div>
+    <div class="stop" data-n="10"><span class="when">End of build</span><h4>Punch list and final draw</h4><p>Final walk, fix everything, final draw with out-of-pocket costs.</p></div>
+    <div class="stop" data-n="11"><span class="when">Make-ready</span><h4>Clean, stage, shoot, list</h4><p>Cleaning, landscaping, staging, photos, lockbox. Field Ops starts CO and fire when it goes under contract.</p></div>
+  </div>
+
+  <div class="quiz" data-quiz="lifecycle"></div>
+</section>
+
+<!-- ============ 2 PLAYERS ============ -->
+<section class="module" id="players" data-title="The players" data-group="The big picture">
+  <div class="mod-head"><span class="insp-tag">Module 2</span></div>
+  <h2>The players</h2>
+  <p class="lede">A flip involves a lot of outside people. Know who each one is and what they need from us.</p>
+
+  <div class="team">
+    <div class="person lead"><div class="av">MS</div><h4>Matthew Silva</h4><p class="role">Project Manager and owner of Catalina Contracting</p><ul><li>Owns scope, budget, and schedule</li><li>Runs Catalina, our in-house contracting company</li><li>Submits draws to the lenders</li><li>Approves every invoice and expense</li></ul></div>
+    <div class="person"><div class="av">CC</div><h4>Catalina Contracting</h4><p class="role">Our in-house contracting company, owned by Matt</p><ul><li>Renovations, junk removal, tank pulls, landscaping, staging</li><li>Builds every job to the approved scope of work</li><li>Invoices numbered like CAT-091126-PROPERTY5</li></ul></div>
+    <div class="person"><div class="av">JF</div><h4>Jerson Frias</h4><p class="role">Project team: crews and jobs</p><ul><li>Manages Catalina crews day to day</li><li>Runs jobs on site and keeps them on schedule</li><li>Your first call for anything happening at a job</li></ul></div>
+    <div class="person"><div class="av">S</div><h4>Outside subcontractors</h4><p class="role">Specialty trades</p><ul><li>Licensed electricians, plumbers, HVAC, roofers</li><li>Brought in when a scope line needs them</li><li>Signed agreement before any work</li></ul></div>
+    <div class="person"><div class="av">K</div><h4>Kiavi</h4><p class="role">Lender</p><ul><li>Draws requested through Kiavi’s process</li><li>Funded draws typically come in about $179 short (a draw fee)</li></ul></div>
+    <div class="person"><div class="av">G</div><h4>Genesis</h4><p class="role">Lender</p><ul><li>Draws through the Genesis portal</li><li>May fund less than requested if their inspector says work isn’t done</li></ul></div>
+    <div class="person"><div class="av">R</div><h4>Renovo</h4><p class="role">Lender</p><ul><li>Application signed in ink or Renovo DocuSign</li><li>Funds draws 24 to 48 hours after approval</li></ul></div>
+    <div class="person"><div class="av">T</div><h4>Title company</h4><p class="role">Closing agent</p><ul><li>Title commitment, closing date, wire instructions</li><li>Records the deed</li></ul></div>
+    <div class="person"><div class="av">LB</div><h4>Lusy Buendia</h4><p class="role">Books and tracker</p><ul><li>Salesforce expenses and Ramp numbers</li><li>Project sheets and draw summaries</li></ul></div>
+    <div class="person"><div class="av">R</div><h4>Renee Bain</h4><p class="role">Transaction coordinator</p><ul><li>Runs the deal in Salesforce, purchase and sale</li><li>Closing dates, closing docs, payoffs</li></ul></div>
+    <div class="person"><div class="av">+</div><h4>Make-ready vendors</h4><p class="role">Cleaners, photographers, stagers</p><ul><li>Clean Hudson, Rami, FotosForTheFuture, and others</li><li>Every one gets logged to the right property</li></ul></div>
+  </div>
+  <div class="callout"><b class="k">Field Ops vs. Project Management</b>
+    Project Management owns the build and the money. Field Ops owns permits, CO and fire inspections, tenants, and the path to closing. They overlap at permits, tank removals, and closing day, so talk to each other daily.
+  </div>
+  <div class="quiz" data-quiz="players"></div>
+</section>
+
+
+
+<!-- ============ SCOPE ============ -->
+<section class="module" id="scope" data-title="The scope of work" data-group="The plan">
+  <div class="mod-head"><span class="insp-tag">Module 3</span></div>
+  <h2>The scope of work</h2>
+  <p class="lede">The scope of work (SOW) is the plan for the whole flip. The lender funds it, Catalina builds it, draws pay for it, and the tracker measures against it. If the scope is vague, everything after it gets messy.</p>
+
+  <h3>One scope, four jobs</h3>
+  <div class="money-flow">
+    <div class="mf lender"><b>Gets the loan</b>The lender approves the rehab budget from our scope.</div>
+    <div class="mf gc"><b>Directs the crew</b>Catalina builds exactly what the scope says.</div>
+    <div class="mf"><b>Drives the draws</b>Each draw requests money for finished scope lines.</div>
+    <div class="mf ramp"><b>Measures the job</b>The tracker compares actual cost to every scope line.</div>
+  </div>
+
+  <h3>How we build a scope, step by step</h3>
+  <div class="route">
+    <div class="stop" data-n="1"><span class="when">Right after contract</span><h4>Walk the property</h4><p>Matt and Jerson walk every room, the exterior, roof, basement, and all systems. Take photos and measurements. Note code items (smoke and CO alarms, handrails, GFCI outlets) and anything that will need a permit.</p></div>
+    <div class="stop" data-n="2"><h4>Write line items by trade</h4><p>Break the work into lines: demo, framing, electrical, plumbing, HVAC, drywall, kitchen, bath, flooring, paint, exterior, permits. Each line says what, how much, and what materials.</p></div>
+    <div class="stop" data-n="3"><h4>Price every line</h4><p>Catalina prices its own labor and materials. Licensed trades (electric, plumbing, HVAC, roofing) get a written quote from an outside sub. Include permit fees.</p></div>
+    <div class="stop" data-n="4"><h4>Add contingency</h4><p>A buffer for surprises behind the walls. Genesis requires 7% when the rehab is over $150K.</p></div>
+    <div class="stop" data-n="5"><h4>Group lines into draw categories and milestones</h4><p>Tag each line Demo, Structural, MEP, Exterior, Finishes, or Soft Costs, the same categories as QuickBooks and Ramp. Decide which lines must be finished for draw 1, draw 2, and so on.</p></div>
+    <div class="stop gate" data-n="6"><h4>Matt approves</h4><p>Excel format, property address at the top, itemized by trade. The total becomes the rehab budget.</p></div>
+    <div class="stop" data-n="7"><h4>Submit with the loan</h4><p>Uploaded with the loan package. Renovo also wants any prior spend if work already started. If the lender approves a different number, update the scope to match.</p></div>
+    <div class="stop" data-n="8"><h4>Load it into the tracker</h4><p>Each scope line goes into Section B with its budgeted dollars. The total is the Reno Budget in the header.</p></div>
+    <div class="stop" data-n="9"><h4>Build and draw against it</h4><p>Jerson runs the crews line by line. The SOW Draw Request sheet tracks each draw: broad line items, amount requested, specific line items, actual cost, date, and the running surplus.</p></div>
+    <div class="stop gate" data-n="10"><h4>Change it only by change order</h4><p>Once approved, the scope changes only through a written, priced, Matt-approved change order logged in Section F.</p></div>
+  </div>
+
+  <h3>What a good scope looks like</h3>
+  <p>A sample for a two-family. Every line is specific enough that a crew knows exactly what to build and a lender inspector can tell whether it’s done.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Trade</th><th>Scope</th><th>Qty</th><th>Cost</th><th>Category</th><th>Draw</th></tr></thead>
+    <tbody>
+      <tr><td>Demo</td><td>Gut both kitchens and both baths, remove debris, 2 dumpsters</td><td>—</td><td>$8,000</td><td>Demo</td><td>1</td></tr>
+      <tr><td>Electrical (licensed sub)</td><td>200A service upgrade, new kitchen circuits, GFCI in wet areas, hardwired smoke and CO alarms</td><td>2 units</td><td>$14,000</td><td>MEP</td><td>1 to 2</td></tr>
+      <tr><td>Plumbing (licensed sub)</td><td>New supply lines, rough-in 2 baths and 2 kitchens, new water heater</td><td>2 units</td><td>$11,000</td><td>MEP</td><td>2</td></tr>
+      <tr><td>Drywall</td><td>Hang, tape, and finish kitchens and baths</td><td>~1,800 sq ft</td><td>$6,500</td><td>Finishes</td><td>2</td></tr>
+      <tr><td>Kitchens</td><td>White shaker cabinets, quartz counters, stainless sink and faucet</td><td>2</td><td>$18,000</td><td>Finishes</td><td>3</td></tr>
+      <tr><td>Baths</td><td>Tub with tile surround, 30" vanity, toilet, tile floor, exhaust fan</td><td>2</td><td>$12,000</td><td>Finishes</td><td>3</td></tr>
+      <tr><td>Flooring</td><td>LVP throughout living areas and bedrooms</td><td>~1,600 sq ft</td><td>$7,200</td><td>Finishes</td><td>3</td></tr>
+      <tr><td>Paint</td><td>Walls, ceilings, and trim, both units</td><td>Whole house</td><td>$6,000</td><td>Finishes</td><td>4</td></tr>
+      <tr><td>Exterior</td><td>Gutters and downspouts, repair front steps, yard cleanup</td><td>—</td><td>$3,500</td><td>Exterior</td><td>4</td></tr>
+      <tr><td>Permits and fees</td><td>Building, electrical, and plumbing permits</td><td>—</td><td>$1,500</td><td>Soft costs</td><td>1</td></tr>
+      <tr><td>Contingency</td><td>About 7%</td><td>—</td><td>$6,200</td><td>—</td><td>—</td></tr>
+      <tr><td><b>Total rehab budget</b></td><td></td><td></td><td><b>$93,900</b></td><td></td><td></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="dodont">
+    <div class="dont"><h4>Vague</h4><ul class="clean"><li>“Kitchen reno: $18,000”</li><li>“Bathroom work”</li><li>“Electrical as needed”</li><li>“Misc: $5,000”</li></ul></div>
+    <div class="do"><h4>Specific</h4><ul class="clean"><li>“2 kitchens: white shaker cabinets, quartz, stainless sink: $18,000”</li><li>“2 baths: tub with tile surround, 30" vanity, toilet, tile floor”</li><li>“200A service, GFCI in wet areas, hardwired smoke and CO”</li><li>“Contingency (7%): $6,200”</li></ul></div>
+  </div>
+
+  <h3>Three numbers to keep straight</h3>
+  <div class="vs">
+    <div><span class="big">Rehab budget</span>What the lender approved from our scope.</div>
+    <div><span class="big">Contract price</span>What Catalina and any subs will charge to build it.</div>
+    <div><span class="big">Total spent</span>What we’ve actually paid so far.</div>
+  </div>
+  <p>The gap between the rehab budget and the contract price is room for contingency and our own spend. When total spent passes the contract price, we’re in overage.</p>
+
+  <h3>Change orders</h3>
+  <div class="flow">
+    <div class="f"><b>Something changes</b>Hidden damage, a different finish, tree removal.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Price it</b>In writing, from Catalina or the sub.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Matt approves</b>No approval, no work.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Log it</b>Section F with cost and schedule impact. Label the invoice “change order.”</div>
+  </div>
+  <div class="callout red"><b class="k">This is where overages come from</b>
+    If the scope says $100,000 and invoices reach $108,000, every extra dollar should trace to an approved change order. If it doesn’t, the scope was vague or a change slipped through.
+  </div>
+
+  <div class="quiz" data-quiz="scope"></div>
+</section>
+
+<!-- ============ LOAN CHECKLIST ============ -->
+<section class="module" id="loanchecklist" data-title="The loan checklist" data-group="Getting to the closing table">
+  <div class="mod-head"><span class="insp-tag">Module 4</span></div>
+  <h2>The Purchase Loan Tracker</h2>
+  <p class="lede">Every loan runs through the Purchase Loan Tracker. It pulls deals from Salesforce and gives each one a lender checklist. Your job is to turn every line green before the closing date.</p>
+
+  <h3>The tabs</h3>
+  <div class="tabs-row"><span>Masterfile</span><span>Purchase Loan</span><span>Purchase Loan - DEADs</span><span>Directory</span><span>Kiavi / Genesis / Renovo templates</span><span>One checklist per deal</span></div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Tab</th><th>What it’s for</th></tr></thead>
+    <tbody>
+      <tr><td>Masterfile</td><td>Every deal from Salesforce: seller, TC, transaction type, stage, close date, contract price, contingency dates, ARV, current stage, and checklist link.</td></tr>
+      <tr><td>Purchase Loan</td><td>Salesforce import of active purchase-loan deals with fund capital required, forecasted revenue, and projected net.</td></tr>
+      <tr><td>Purchase Loan - DEADs</td><td>Closed and dead deals, kept for history.</td></tr>
+      <tr><td>Directory</td><td>Each deal and a link to its checklist.</td></tr>
+      <tr><td>Lender templates</td><td>The Kiavi, Genesis, and Renovo checklists. Clicking “Create a Checklist” builds one for a deal from its lender’s template.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Inside a deal checklist</h3>
+  <div class="sheet">
+    <div class="sh-top">Summary panel: Active lender · Borrower · Purchase price · Rehab budget · ARV · Target close · Loan balance · Draws requested and received · Paid to contractor · Balance</div>
+    <div class="band"><div class="L" style="background:var(--sign)">1</div><div class="R"><b>Entity docs</b>Articles of organization, signed operating agreement, EIN letter, certificate of good standing (under 90 days), photo ID, track record.</div></div>
+    <div class="band"><div class="L" style="background:var(--blue)">2</div><div class="R"><b>Financial docs</b>Bank statements, proof of down payment funds, credit authorization (Kiavi), personal financial statement (Renovo).</div></div>
+    <div class="band"><div class="L" style="background:#a0790a">3</div><div class="R"><b>Deal submission</b>Executed purchase contract with all amendments, scope of work and budget, application, deposit.</div></div>
+    <div class="band"><div class="L" style="background:#5a6478">4</div><div class="R"><b>Title and insurance</b>Title and escrow officer contacts, title commitment, hazard or builder’s risk binder with the lender as mortgagee, flood cert if needed.</div></div>
+    <div class="band"><div class="L" style="background:var(--red)">5</div><div class="R"><b>Underwriting</b>Appraisal (as-is and ARV), property access for the appraiser, term sheet review, signed commitment, all prior-to-docs (PTD) conditions cleared.</div></div>
+    <div class="band"><div class="L" style="background:#7a3e9d">6</div><div class="R"><b>Construction draw setup</b>Draw bank account (must match the entity name), draw process, inspector assignment.</div></div>
+    <div class="band"><div class="L" style="background:var(--green)">7</div><div class="R"><b>Closing and post-close</b>Closing date confirmed, final walkthrough, wire, signed docs, recorded deed, then the draw cycle begins.</div></div>
+  </div>
+
+  <h3>What each lender wants that the others don’t</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Kiavi</th><th>Genesis</th><th>Renovo</th></tr></thead>
+    <tbody><tr>
+      <td>Deal created in the Kiavi app. Hard credit pull. Proof of funds covering down payment, closing costs, and 3 months of reserves. Kiavi-approved title company. Draws through the portal.</td>
+      <td>Scope of work in Excel, itemized by trade, 7% contingency if rehab is over $150K. Transaction deposit to move to underwriting.</td>
+      <td>Signed application (ink or Renovo DocuSign). Track record under 90 days, updated every deal. Bank statements under 45 days. Personal financial statement. Plans for structural work.</td>
+    </tr></tbody>
+  </table></div>
+
+  <h3>Status and owner on every line</h3>
+  <p>Each line has a <b>Status</b> (Not Started, In Progress, Submitted, Completed, or n/a) and an <b>Owner</b>. A line with no owner is a line nobody is doing. Fill in both.</p>
+
+  <h3>Entity docs to keep fresh</h3>
+  <ul class="clean">
+    <li><b>Certificate of good standing:</b> must be under 90 days old.</li>
+    <li><b>Track record (REO list):</b> Renovo wants it under 90 days and updated every deal. Kiavi uses it to price the loan, so more experience means a better rate.</li>
+    <li><b>Photo ID:</b> expired ID means resubmitting.</li>
+    <li><b>Operating agreement:</b> ownership percentages must match the application. The person signing at closing must match it too.</li>
+  </ul>
+
+  <div class="quiz" data-quiz="loanchecklist"></div>
+</section>
+
+<!-- ============ PURCHASE CLOSE ============ -->
+<section class="module" id="purchaseclose" data-title="Closing the purchase" data-group="Getting to the closing table">
+  <div class="mod-head"><span class="insp-tag">Module 5</span></div>
+  <h2>Closing the purchase</h2>
+  <p class="lede">The contract gives us a deadline. If the loan isn’t ready by then, we can lose the deal or our deposit. Everything in this module is about beating the clock.</p>
+
+  <h3>Watch three dates in Salesforce</h3>
+  <div class="vs">
+    <div><span class="big">Inspection</span>Contingency end date. Our window to back out over condition.</div>
+    <div><span class="big">Mortgage</span>Contingency end date. The loan must be committed before this.</div>
+    <div><span class="big">Close</span>Target closing date with the seller.</div>
+  </div>
+  <div class="callout red"><b class="k">The mortgage contingency is the real deadline</b>
+    If the loan isn’t on track a week before the mortgage contingency ends, tell Matt right away. He may need to request an extension or look at other options.
+  </div>
+
+  <h3>From submission to keys</h3>
+  <div class="route">
+    <div class="stop" data-n="1"><h4>Submit</h4><p>Create the checklist from the lender template. Upload entity docs, contract, scope of work, and bank statements. Pay any deposit.</p></div>
+    <div class="stop" data-n="2"><h4>Appraisal</h4><p>The lender orders it. We give access: Field Ops meets the appraiser. If the ARV comes in low, tell Matt the same day, because it can shrink the loan.</p></div>
+    <div class="stop" data-n="3"><h4>Title and insurance</h4><p>Title commitment must show clear title. The insurance binder must list the lender as mortgagee. Get the title, escrow, and insurance agent contacts early.</p></div>
+    <div class="stop gate" data-n="4"><h4>Term sheet and commitment</h4><p>Matt reviews rate, LTC, points, term, and draw schedule, then signs. Return it before the deadline.</p></div>
+    <div class="stop gate" data-n="5"><h4>Clear PTD conditions</h4><p>Every prior-to-docs item must be green before the lender issues closing documents. Check the portal daily.</p></div>
+    <div class="stop" data-n="6"><h4>Draw setup</h4><p>Enter the draw bank account (entity name must match the loan). Learn the lender’s draw process. Get the inspector contact.</p></div>
+    <div class="stop gate" data-n="7"><h4>Closing</h4><p>Confirm the date with title, lender, and seller’s attorney. Final walkthrough with photos. Review the closing disclosure. Verify the wire. Sign. Record the deed.</p></div>
+    <div class="stop" data-n="8"><h4>File it</h4><p>Signed loan docs to the Loan Docs folder. HUD, loan docs, COF, and EIN linked on the Portfolio Tracker. Then deal setup begins.</p></div>
+  </div>
+
+  <h3>Wire safety</h3>
+  <div class="callout red"><b class="k">Never trust wire instructions from email</b>
+    Wire fraud targets real estate closings. Always confirm wire instructions by calling the title company at a number you already know. Not a number in the email. If instructions ever “change,” stop and call Matt.
+  </div>
+
+  <h3>Front end and back end</h3>
+  <p>In Salesforce, a flip usually has two records. The <b>front-end</b> record is our purchase from the seller. The <b>back-end</b> record (named “Back-End ~ address”) is our sale to the end buyer. Some properties also carry a “HOLDINGS” record. Make sure expenses and dates go on the right one.</p>
+
+  <div class="quiz" data-quiz="purchaseclose"></div>
+</section>
+
+<!-- ============ 3 SETUP ============ -->
+<section class="module" id="setup" data-title="Deal setup and utilities" data-group="Starting a job">
+  <div class="mod-head"><span class="insp-tag">Module 6</span></div>
+  <h2>Deal setup and utilities</h2>
+  <p class="lede">Every flip lives in its own company. That keeps money, liability, and taxes clean, but only if it’s set up right on day one.</p>
+
+  <h3>One deal, one of everything</h3>
+  <div class="money-flow">
+    <div class="mf"><b>Deal LLC</b>Formed for this property, with NJ formation docs.</div>
+    <div class="mf"><b>EIN</b>The LLC’s tax ID. Utilities and banks need it.</div>
+    <div class="mf bank"><b>LLC bank account</b>Lender draws land here. Fund at least $25k for Ramp.</div>
+    <div class="mf ramp"><b>Ramp account</b>One per deal LLC. Card spend auto-syncs to QuickBooks.</div>
+    <div class="mf"><b>QuickBooks file</b>Chart of accounts mirrors the draw categories.</div>
+    <div class="mf"><b>Insurance</b>Vacant or builder’s risk policy, filed in the tracker.</div>
+  </div>
+  <p>QuickBooks categories match the draw categories: <b>Demo, Structural, MEP, Exterior, Finishes, and Soft Costs</b>. That way spend is already sorted when it’s time to request a draw.</p>
+
+  <h3>The document row</h3>
+  <p>On the Dashboard, every property has a row linking its key documents. If a cell is empty or shows “—”, the job isn’t fully set up.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Document</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td>Insurance</td><td>The property’s policy</td></tr>
+      <tr><td>Loan docs</td><td>Lender agreement, draw budget, and terms</td></tr>
+      <tr><td>HUD</td><td>The purchase settlement statement</td></tr>
+      <tr><td>COF</td><td>Certificate of Formation for the LLC</td></tr>
+      <tr><td>EIN</td><td>IRS letter with the LLC’s tax ID</td></tr>
+      <tr><td>Checklists</td><td>Post-sale wind-down checklist</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Utilities: the PSEG/Water tab</h3>
+  <div class="flow">
+    <div class="f"><b>Open</b>Gas, electric, and water in the LLC’s name with its EIN.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Log</b>Account numbers per unit, provider, contact, acquisition date.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Watch</b>Track the amount due. Dispute bills that look wrong.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Close</b>After sale, close every account and move the row to Closed Accounts with the date.</div>
+  </div>
+  <ul class="clean">
+    <li>Multi-family homes often have one account per unit, plus a house meter. Log them all.</li>
+    <li>Not every area is PSEG. Some are JCP&L. Water may be Veolia, Passaic Valley, or American Water.</li>
+    <li>Utility bills are a holding cost of the flip. Log each payment to the property in Salesforce.</li>
+  </ul>
+  <div class="callout red"><b class="k">Protect logins</b>
+    Utility and portal logins give access to company accounts. Never text them, post them in group chats, or paste them into shared docs. Ask Matt where logins are kept.
+  </div>
+
+  <div class="quiz" data-quiz="setup"></div>
+</section>
+
+
+<!-- ============ 5 DRAWS ============ -->
+<section class="module" id="draws" data-title="Lender draws" data-group="The money">
+  <div class="mod-head"><span class="insp-tag">Module 7</span></div>
+  <h2>Lender draws</h2>
+  <p class="lede">The lender doesn’t hand over the renovation money up front. We do the work, prove it, and get reimbursed in pieces called draws. Draws keep the job funded.</p>
+
+  <h3>The draw cycle</h3>
+  <div class="route">
+    <div class="stop" data-n="1"><h4>Work gets done</h4><p>A phase is finished on site. Take dated photos of the completed work.</p></div>
+    <div class="stop" data-n="2"><h4>Build the draw package</h4><p>Scope of work line items, GC invoices, receipts (pull the Ramp spend report, already sorted by category), and site photos.</p></div>
+    <div class="stop" data-n="3"><h4>Matt submits</h4><p>Through the Genesis portal or the Kiavi process. Log it in Section C: draw number, date submitted, amount requested.</p></div>
+    <div class="stop gate" data-n="4"><h4>Lender inspection</h4><p>The lender’s inspector visits and confirms the work is complete. Make sure the site is accessible and the work is visibly done.</p></div>
+    <div class="stop" data-n="5"><h4>Funded</h4><p>The lender wires to the LLC bank account. Log the date funded and amount funded. Variance = requested minus funded.</p></div>
+    <div class="stop" data-n="6"><h4>Pay the GC</h4><p>Pay the approved invoice from the LLC account and log it in Section A.</p></div>
+  </div>
+
+  <h3>Reading the variance</h3>
+  <div class="two-col">
+    <div class="panel"><b>Kiavi</b><br>Funded draws typically come in about <b>$179 less</b> than requested. That’s a draw fee. It’s expected. Log it anyway.</div>
+    <div class="panel"><b>Genesis</b><br>If the inspector doesn’t see the work done, they fund less. Example: you request <b>$30,000</b> and they fund <b>$20,000</b>. The $10,000 gap has to be finished, documented, and re-requested, or covered out of pocket.</div>
+  </div>
+
+  <h3>Draw rules</h3>
+  <ul class="clean">
+    <li>Request only for work that is actually complete and photographed.</li>
+    <li>Log every draw the day it’s submitted and the day it’s funded.</li>
+    <li>Big variance? Tell Matt the same day. It means cash we planned on isn’t coming.</li>
+    <li>On the final draw, include out-of-pocket costs that went over earlier draws.</li>
+    <li>While the loan has an interest reserve, it covers the mortgage payment. After it runs out, payments come out of pocket and get tracked in Ramp.</li>
+  </ul>
+
+  <div class="quiz" data-quiz="draws"></div>
+</section>
+
+<!-- ============ 6 PAYING GCs ============ -->
+<section class="module" id="paying" data-title="Paying contractors" data-group="The money">
+  <div class="mod-head"><span class="insp-tag">Module 8</span></div>
+  <h2>Paying contractors</h2>
+  <p class="lede">Section A of every property tab is the contractor payment log. It answers one question: have we paid the right amount, for work that’s actually done?</p>
+
+  <h3>Invoice to payment</h3>
+  <div class="flow">
+    <div class="f"><b>1. Invoice in</b>Tied to a scope line and draw period.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>2. Verify</b>Is the work done? Is the amount right? Not already paid?</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>3. Matt approves</b>Every invoice.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>4. Pay</b>ACH, wire, check, or Ramp.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>5. Log</b>Invoice #, amount, date paid, method, ✓.</div>
+  </div>
+
+  <h3>The reconciliation line</h3>
+  <p>At the top of Section A, five numbers tell the whole story:</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Contract price</td><td>What the GC agreed to.</td></tr>
+      <tr><td>Total invoiced</td><td>Everything the GC has billed.</td></tr>
+      <tr><td>Total paid</td><td>Everything we’ve actually sent.</td></tr>
+      <tr><td>Balance due</td><td>Invoiced minus paid. Unpaid bills.</td></tr>
+      <tr><td>Overage or savings</td><td>Contract price minus invoiced. Negative means over contract.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="vs">
+    <div>Contract<span class="big">$100,000</span>example job</div>
+    <div>Invoiced<span class="big">$108,000</span>&nbsp;</div>
+    <div>Over contract<span class="big neg">−$8,000</span>must trace to approved change orders</div>
+  </div>
+
+  <h3>Logging rules</h3>
+  <ul class="clean">
+    <li><b>Always record the invoice number.</b> Catalina uses CAT-date-property (like CAT-101226-PROPERTY4). Outside subs use their own numbers. Record them exactly.</li>
+    <li><b>Never log the same invoice twice.</b> Before adding, search the tab for the invoice number.</li>
+    <li>If an invoice is logged but not paid, the Amount Paid stays blank until the money actually goes out. Chase blanks weekly.</li>
+    <li>If an account number on an invoice doesn’t match what we have, don’t pay. Flag to Matt.</li>
+    <li>Check the ✓ column only after payment is confirmed.</li>
+  </ul>
+
+  <div class="quiz" data-quiz="paying"></div>
+</section>
+
+<!-- ============ 7 RAMP ============ -->
+<section class="module" id="ramp" data-title="Ramp and expenses" data-group="The money">
+  <div class="mod-head"><span class="insp-tag">Module 9</span></div>
+  <h2>Ramp and expenses</h2>
+  <p class="lede">This is the most important money skill on the team. Ramp is our company card. Salesforce is where every expense lives. The tracker’s Section D mirrors Salesforce for each property. They must all agree.</p>
+
+  <h3>Where every dollar goes</h3>
+  <div class="money-flow">
+    <div class="mf ramp"><b>1. Ramp card swipe</b>Receipt captured at purchase. Auto-syncs to the LLC’s QuickBooks.</div>
+    <div class="mf"><b>2. Classify in Ramp</b>Property, category, and draw line item.</div>
+    <div class="mf"><b>3. Salesforce expense</b>Entered on the property’s deal with an expense ID like 202609-3478.</div>
+    <div class="mf gc"><b>4. Tracker Section D</b>Date, ID, description, card last 4, amount, receipt, reimbursable.</div>
+  </div>
+
+  <h3>Ramp categories</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Category</th><th>Examples</th></tr></thead>
+    <tbody>
+      <tr><td>Materials</td><td>Home Depot, Lowe’s, appliances</td></tr>
+      <tr><td>Labor</td><td>Day labor and small repairs</td></tr>
+      <tr><td>Permits and fees</td><td>CO applications, permit fees, municipal surcharges</td></tr>
+      <tr><td>Equipment</td><td>Tools, lockboxes, landscaping gear</td></tr>
+      <tr><td>Overhead</td><td>Utilities, HOA, insurance, property tax</td></tr>
+      <tr><td>Other</td><td>Photos, staging, cleaning, shipping</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The Ramp rules</h3>
+  <div class="pillars">
+    <div class="pillar"><h4>Approval first</h4><p>Matt approves before you spend.</p></div>
+    <div class="pillar"><h4>Receipt at purchase</h4><p>Snap it in Ramp before you leave the store.</p></div>
+    <div class="pillar"><h4>Right property</h4><p>Every charge belongs to one deal. Never leave it unassigned.</p></div>
+    <div class="pillar"><h4>Same day</h4><p>Into Salesforce today, not end of week.</p></div>
+    <div class="pillar"><h4>Card last 4</h4><p>Record the Ramp card’s last four digits on the expense.</p></div>
+    <div class="pillar"><h4>One place only</h4><p>An expense goes in Section A or Section D, never both.</p></div>
+  </div>
+
+  <h3>Split purchases</h3>
+  <p>One receipt for several properties gets split evenly (or by what was used). Example: a $34.91 Home Depot run for three jobs becomes <b>$11.64, $11.64, and $11.63</b>. Write the split in the description: “Home Depot ($34.91 total for 3 properties).”</p>
+
+  <h3>Reimbursable expenses</h3>
+  <p>Some costs get paid back at closing or by someone else: prorated property tax, sewer, insurance. Mark them <b>Reimbursable: Yes</b> so they don’t count against profit twice.</p>
+
+  <h3>The match test</h3>
+  <div class="callout green"><b class="k">Total spent must equal total paid</b>
+    On every property tab, the renovation “total spent” should match what was actually paid out. If they don’t match, something was missed or doubled. Find it before the week ends.
+  </div>
+
+  <h3>Common duplicates to watch for</h3>
+  <ul class="clean">
+    <li>A Catalina invoice logged in Section A, then the same charge entered again in Salesforce and Section D (tree removal, staging, landscaping).</li>
+    <li>The same invoice number entered twice in Section A.</li>
+    <li>A materials purchase copied onto two different properties.</li>
+  </ul>
+
+  <div class="quiz" data-quiz="ramp"></div>
+</section>
+
+<!-- ============ 8 TRACKER ============ -->
+<section class="module" id="tracker" data-title="The Portfolio Tracker" data-group="The money">
+  <div class="mod-head"><span class="insp-tag">Module 10</span></div>
+  <h2>The Portfolio Tracker</h2>
+  <p class="lede">LVG_Portfolio_Tracker_v5 is the single source of truth for every job. If it isn’t in the tracker, Matt can’t see it.</p>
+
+  <h3>The tabs</h3>
+  <div class="tabs-row"><span>Dashboard</span><span>PSEG/Water</span><span>One tab per property</span><span>Draw Summary</span><span>Ramp Summary</span><span>How To Use</span></div>
+
+  <h3>Inside every property tab</h3>
+  <div class="sheet">
+    <div class="sh-top">Header: Loan amount · Reno budget · Total spent · Budget left · % done · GC price · Total Salesforce expense</div>
+    <div class="band"><div class="L" style="background:var(--sign)">A</div><div class="R"><b>Contractor payment log</b>Every GC invoice and payment, reconciled against the contract price.</div></div>
+    <div class="band"><div class="L" style="background:var(--blue)">B</div><div class="R"><b>Renovation milestones</b>Each phase: subcontractor, dates, status, budgeted vs. actual.</div></div>
+    <div class="band"><div class="L" style="background:#a0790a">C</div><div class="R"><b>Lender draw tracker</b>One row per draw: submitted, funded, requested, funded amount, variance.</div></div>
+    <div class="band"><div class="L" style="background:var(--red)">D</div><div class="R"><b>Salesforce and Ramp expenses</b>Every non-GC expense with its ID, card last 4, amount, and receipt.</div></div>
+    <div class="band"><div class="L" style="background:#5a6478">E</div><div class="R"><b>Permits and inspections</b>Permit type, town, applied, issued, inspected, result, fee, permit #.</div></div>
+    <div class="band"><div class="L" style="background:#7a3e9d">F</div><div class="R"><b>Issues and change orders</b>Blockers and change orders with cost and schedule impact, and who approved.</div></div>
+  </div>
+
+  <h3>The Dashboard, column by column</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Group</th><th>Columns</th><th>What to check</th></tr></thead>
+    <tbody>
+      <tr><td>Property</td><td>Property, lender</td><td>Kiavi or Genesis.</td></tr>
+      <tr><td>Financials</td><td>Loan amount, draw budget, GC price, total spent, budget left, % complete</td><td>Negative budget left means over budget.</td></tr>
+      <tr><td>Phase</td><td>Current phase, phase status</td><td>Matches what’s really happening on site.</td></tr>
+      <tr><td>Draw</td><td>Draw #, status, amount, date</td><td>Updated when a draw is submitted or funded.</td></tr>
+      <tr><td>GC payments</td><td>Invoiced, paid to GC, balance to GC, overage or savings</td><td>Pulled from Section A.</td></tr>
+      <tr><td>Ramp</td><td>Ramp card, Ramp spent</td><td>Card last 4 and total card spend.</td></tr>
+      <tr><td>Milestone</td><td>Next milestone, target date</td><td>What’s next and when.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Weekly tracker routine</h3>
+  <ul class="clean panel">
+    <li>Every invoice from the week is in Section A with an invoice number.</li>
+    <li>Every draw submitted or funded is in Section C.</li>
+    <li>Every Ramp charge and Salesforce expense is in Section D.</li>
+    <li>Phases and % complete on the Dashboard match the site.</li>
+    <li>Total spent matches total paid.</li>
+    <li>No duplicates across sections or properties.</li>
+  </ul>
+
+  <div class="quiz" data-quiz="tracker"></div>
+</section>
+
+<!-- ============ 9 BUILD ============ -->
+<section class="module" id="build" data-title="Running the build" data-group="The job site">
+  <div class="mod-head"><span class="insp-tag">Module 11</span></div>
+  <h2>Running the build</h2>
+  <p class="lede">Catalina builds our jobs and Jerson manages the crews day to day. The project team keeps work moving in the right order, catches problems early, and documents everything so draws and payments are easy.</p>
+
+  <h3>The order of work</h3>
+  <p>Red phases need inspections before the next phase can cover them up.</p>
+  <div class="phases">
+    <span>Demo and cleanout</span><span>Structural and framing</span><span class="insp">Rough MEP</span><span class="insp">Rough inspections</span><span>Insulation</span><span>Drywall</span><span>Flooring</span><span>Kitchen and bath</span><span>Trim and doors</span><span>Paint</span><span>Exterior and landscaping</span><span>Appliances</span><span class="insp">Final MEP inspections</span><span>Punch list</span>
+  </div>
+  <div class="callout red"><b class="k">Don’t close walls early</b>
+    Electrical, plumbing, and mechanical rough-ins must pass inspection before insulation and drywall go up. Covering uninspected work means tearing walls open later.
+  </div>
+
+  <h3>Every site visit</h3>
+  <div class="flow">
+    <div class="f"><b>Walk it</b>What’s done since last visit? What’s behind?</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Photograph it</b>Dated photos by room. These become draw evidence.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Log issues</b>Anything new goes in Section F.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Update status</b>Phase, % complete, next milestone.</div>
+  </div>
+
+  <h3>Common surprises</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Surprise</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr><td>Buried oil tank</td><td>Schedule a pull, get the closure paperwork, log the cost.</td></tr>
+      <tr><td>Roof worse than expected</td><td>Get a price, change order to Matt, log it.</td></tr>
+      <tr><td>Water in the basement</td><td>Sump pump and grading repairs before finishing the basement.</td></tr>
+      <tr><td>Trees and overgrowth</td><td>Tree removal and cleanup as a change order.</td></tr>
+      <tr><td>Finished attic or basement without power</td><td>Hardwiring may mean opening walls. Tell Matt so buyers can be informed.</td></tr>
+      <tr><td>Water meter issues</td><td>Couplings or utility service call. Coordinate with Field Ops.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Permits on the build</h3>
+  <p>The GC or their licensed trades pull building, electrical, and plumbing permits. Log each one in Section E. Every permit must be inspected and signed off. An open permit at the end of the job blocks the CO and the sale.</p>
+  <p>For site safety rules, follow the Site Safety module in the Field Ops course.</p>
+
+  <div class="quiz" data-quiz="build"></div>
+</section>
+
+<!-- ============ 10 PUNCH ============ -->
+<section class="module" id="punch" data-title="Punch list and final walk" data-group="The job site">
+  <div class="mod-head"><span class="insp-tag">Module 12</span></div>
+  <h2>Punch list and final walk</h2>
+  <p class="lede">The punch list is the last chance to catch the small things buyers notice first. Pre-plan it. Don’t wait for listing week.</p>
+
+  <div class="two-col">
+    <ol class="clean panel">
+      <li><b>Touch-up paint.</b> Scuffs, missed spots, uneven areas on walls, trim, and ceilings.</li>
+      <li><b>Cabinets and hardware.</b> Doors and drawers close smoothly, hardware secure and level.</li>
+      <li><b>Caulk and grout.</b> Tubs, backsplashes, sinks, and tile.</li>
+      <li><b>Flooring.</b> Scratches, gaps, uneven boards, loose tiles.</li>
+      <li><b>Doors and closets.</b> Close properly, don’t stick, latches work.</li>
+    </ol>
+    <ol class="clean panel" start="6">
+      <li><b>Lights and bulbs.</b> All fixtures working, bulbs match.</li>
+      <li><b>Plumbing fixtures.</b> No leaks, good pressure, drains clear.</li>
+      <li><b>Appliances.</b> Installed and working.</li>
+      <li><b>Windows and screens.</b> Open, close, lock, screens intact.</li>
+      <li><b>Exterior.</b> Debris gone, grading and drainage right, curb appeal.</li>
+    </ol>
+  </div>
+
+  <h3>Closing out the build</h3>
+  <div class="flow">
+    <div class="f"><b>Walk with the GC</b>Build the punch list together.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Fix and re-walk</b>Every item checked off in person.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Final invoice</b>Matches the contract balance.</div>
+    <div class="arrow">›</div>
+    <div class="f"><b>Final draw</b>Including out-of-pocket overages.</div>
+  </div>
+
+  <div class="quiz" data-quiz="punch"></div>
+</section>
+
+<!-- ============ 11 MAKE READY ============ -->
+<section class="module" id="makeready" data-title="Staging and listing" data-group="Selling">
+  <div class="mod-head"><span class="insp-tag">Module 13</span></div>
+  <h2>Make-ready, staging, and listing</h2>
+  <p class="lede">The house is built. Now it has to sell fast and for top dollar. Every make-ready cost still gets logged to the property.</p>
+
+  <div class="route">
+    <div class="stop" data-n="1"><h4>Post-construction cleaning</h4><p>Deep clean after the trades leave. Usually a few hundred dollars per property.</p></div>
+    <div class="stop" data-n="2"><h4>Exterior and landscaping</h4><p>Trash-out, grass cut, seed, cleanup. Final grass cut before winter.</p></div>
+    <div class="stop" data-n="3"><h4>Staging</h4><p>Typically about $2,500 per property. Anything over budget gets flagged in the description.</p></div>
+    <div class="stop" data-n="4"><h4>Real estate photos</h4><p>After staging, never before. Usually $200 to $730 depending on the shoot.</p></div>
+    <div class="stop" data-n="5"><h4>Listing details</h4><p>Confirm beds, baths, and the room layout by floor. Leave building square footage off when it conflicts with the Zillow integration.</p></div>
+    <div class="stop" data-n="6"><h4>Show-ready</h4><p>Lockbox on, lights working, candles and water for showings, open house prep.</p></div>
+    <div class="stop" data-n="7"><h4>Hand off to Field Ops</h4><p>When it goes under contract, Field Ops starts CO and fire. Appraisal repairs come back to you.</p></div>
+  </div>
+
+  <div class="callout"><b class="k">Holding costs keep running</b>
+    While it’s listed, utilities, HOA, insurance, and taxes are still being paid. Every week on the market costs money, so make-ready should be planned during the punch list, not after.
+  </div>
+
+  <div class="quiz" data-quiz="makeready"></div>
+</section>
+
+
+<!-- ============ 13 SCENARIOS ============ -->
+<section class="module" id="scenarios" data-title="Real scenarios" data-group="Practice">
+  <div class="mod-head"><span class="insp-tag">Module 14</span></div>
+  <h2>Real scenarios</h2>
+  <p class="lede">These come from our own jobs and tracker. Decide what you’d do, then check the answer.</p>
+  <div id="scenList"></div>
+</section>
+
+<!-- ============ 14 FIRST 30 ============ -->
+<section class="module" id="first30" data-title="Your first 30 days" data-group="Practice">
+  <div class="mod-head"><span class="insp-tag">Module 15</span></div>
+  <h2>Your first 30 days</h2>
+  <p class="lede">Learn it, do it with help, do it alone, then own it. Your checkmarks save in this browser.</p>
+  <div id="checklist"></div>
+</section>
+
+<!-- ============ EXAM ============ -->
+<section class="module" id="exam" data-title="Final check" data-group="Practice">
+  <div class="mod-head"><span class="insp-tag">Final</span></div>
+  <h2>Final check</h2>
+  <p class="lede">Fourteen questions across the course. Get 11 or more right and you’re ready to start on a live job with Matt.</p>
+  <div class="quiz" data-quiz="exam"></div>
+  <div id="examStamp"></div>
+</section>
+
+<div class="mod-foot" id="modFoot">
+  <button class="btn ghost" id="prevBtn">Previous</button>
+  <button class="btn y" id="doneBtn">Mark done and continue</button>
+</div>
+
+</main>
+</div>
+
+<script src="../config.js"></script>
+<script>
+(function(){
+  const SCEN = [
+    {t:"The draw came back short",w:"Lender draw",s:"You requested $30,000. The lender funded $20,000.",a:"Log the funded amount and the $10,000 variance in Section C the same day. Tell Matt immediately. Find out which line items the inspector didn’t accept, finish or document that work, and re-request it on the next draw. Don’t pay the GC for work the lender hasn’t confirmed unless Matt says so."},
+    {t:"Same charge, two places",w:"Tracker review",s:"Catalina’s tree removal ($650) is in Section A as an invoice. You also see it in Section D as a Salesforce expense labeled “Tree removal, change order.”",a:"That’s a duplicate. It counts the $650 twice and makes the job look worse than it is. Keep it in one place (the invoice log for GC invoices), remove the other, and tell Lusy so Salesforce is cleaned up too."},
+    {t:"The same materials on two properties",w:"Tracker review",s:"The same materials charge appears on one property’s invoice log and again in another property’s Salesforce expenses.",a:"Find the receipt and confirm which property it belongs to. Remove it from the other one. If it was really split, split it with the math shown in the description."},
+    {t:"One receipt, three jobs",w:"Home Depot",s:"You bought $34.91 of supplies for three properties on one Ramp swipe.",a:"Split it: $11.64, $11.64, $11.63. Log each share on its property with the note “Home Depot ($34.91 total for 3 properties).” Attach the same receipt."},
+    {t:"Over contract",w:"Contractor payments",s:"The contract was $100,000. Invoices total $108,000.",a:"Figure out what made up the $8,000 difference. Each extra should trace to an approved change order in Section F. Anything that doesn’t gets raised with Matt before another payment goes out."},
+    {t:"The GC wants to drywall",w:"On site",s:"The crew is ready to hang drywall, but the rough electrical inspection hasn’t happened.",a:"Stop drywall. Rough inspections must pass first, or we’ll be cutting walls open later. Get the inspection scheduled and move the crew to other work."},
+    {t:"Unknown account number",w:"Vendor invoice",s:"An appliance invoice lists account 5108. We’ve always paid this vendor at account 2293.",a:"Don’t pay it. Send it to Matt. Changed account numbers can be honest mistakes or fraud. Only pay once it’s confirmed."},
+    {t:"Vague scope line",w:"Scope of work",s:"The scope says “Bathroom work: $12,000.” Jerson’s crew asks whether tile goes up the walls or just the floor.",a:"The line is too vague. Get Matt’s decision now, write it into the scope in detail, and if it changes the price, do a change order. Next scope, spell out the materials and quantities so the crew never has to guess."},
+    {t:"Staging went over",w:"Make-ready",s:"Staging came in at $2,500 but the plan was less.",a:"Log it with a clear note, like “staging (over budget),” so it’s visible in review. Next time, confirm the staging quote with Matt before booking."},
+    {t:"Photos before staging",w:"Make-ready",s:"The photographer is available tomorrow. Staging isn’t until Friday.",a:"Wait. Photos go after staging and cleaning. Paying for two shoots costs more than waiting two days."}
+  ];
+  SCEN.unshift(
+    {t:"The mortgage contingency is in 6 days",w:"Purchase loan",s:"The appraisal isn’t back and two PTD items are still red. The mortgage contingency ends in six days.",a:"Tell Matt today. Call the lender for an appraisal ETA, chase the two PTD items with owners and deadlines, and update the checklist. Matt decides whether to request an extension from the seller."},
+    {t:"New wire instructions by email",w:"Closing day",s:"An email that looks like it’s from the title company says their bank changed and gives new wire instructions.",a:"Don’t wire. Call the title company using a number you already have, not one from the email. Tell Matt. Changed wire instructions by email are a classic fraud pattern."},
+    {t:"Renovo rejects the track record",w:"Loan submission",s:"Renovo says our REO list is too old.",a:"Update the track record with every completed project, date it, and resubmit. It has to be under 90 days old and updated for every deal. Save the new version where the next deal can use it."}
+  );
+  const WEEKS = [
+    {h:"Week 1: Learn",items:["Get access to the Portfolio Tracker, Salesforce, Ramp, Asana, Slack, and Google Drive","Finish this course and pass the final check","Read every property tab and explain Sections A through F to Matt","Read the Ramp process map and the GC contract template","Walk through the Purchase Loan Tracker and one completed lender checklist with Matt","Walk two active job sites with Matt","Shadow Jerson running crews for two days","Get your Ramp card and learn to snap receipts"]},
+    {h:"Week 2: Do it with help",items:["Log a week of Ramp charges to the right properties with Matt reviewing","Log GC invoices in Section A with invoice numbers","Build a draw package (photos, invoices, Ramp report) with Matt","Walk a new property with Matt and Jerson and draft the scope of work","Create a loan checklist for a new deal and assign an owner to every line","Update the Dashboard phase and % complete for two properties","Find and fix one duplicate in the tracker"]},
+    {h:"Week 3: Do it alone",items:["Run the weekly tracker routine on all active properties","Log a draw from submission to funding, including variance","Run a site visit: photos, issues in Section F, status update","Price and present a change order to Matt","Chase PTD conditions on an active loan and report status daily","Plan the make-ready for one property near the end of its build"]},
+    {h:"Week 4: Own it",items:["Own two jobs end to end in the tracker","Get one deal from submission to clear to close","Total spent matches total paid on every property you own","Run a punch list walk with the GC","30-day review with Matt"]}
+  ];
+  const Q = {
+    lifecycle:[
+      {q:"What gets set up first, at acquisition close?",o:["Staging","The deal LLC, EIN, bank, Ramp, QuickBooks, and insurance","The listing","The punch list"],a:1,y:"Every flip lives in its own company from day one."},
+      {q:"When is make-ready planned?",o:["After listing","During the punch list","After closing","Never, it just happens"],a:1,y:"Plan it early so days on market stay low."},
+      {q:"Which stop is a money gate?",o:["Lockbox on","Build and draw","Archive photos","Grass cut"],a:1,y:"Draws and payments are where money is made or lost."}
+    ],
+    players:[
+      {q:"Who is our in-house GC?",o:["An outside sub","Catalina Contracting","Genesis","Kiavi"],a:1,y:"Catalina Contracting is our in-house contracting company."},
+      {q:"A Kiavi draw funds $179 less than requested. What is that?",o:["A mistake","A typical draw fee","Fraud","An inspection failure"],a:1,y:"It shows up on most Kiavi draws. Log it as variance."},
+      {q:"Who approves invoices and expenses?",o:["The GC","Lusy","Matt","The lender"],a:2,y:"Every invoice and expense goes through Matt."}
+    ],
+    loanchecklist:[
+      {q:"How do you start a new deal’s loan checklist?",o:["Copy an old one by hand","Click Create a Checklist so it builds from the lender’s template","Email the lender","Skip it"],a:1,y:"The template sets every requirement for that lender."},
+      {q:"A certificate of good standing must be…",o:["Under 90 days old","Under 2 years old","Notarized","From the IRS"],a:0,y:"Lenders reject stale certificates."},
+      {q:"What does PTD mean?",o:["Paid to date","Prior to docs: conditions that must clear before closing docs are issued","Permit to demo","Post-title deed"],a:1,y:"All PTD items must be green before closing."},
+      {q:"A checklist line has no owner. What does that mean?",o:["It’s done","Nobody is doing it. Assign one","It’s optional","The lender owns it"],a:1,y:"Every line needs a status and an owner."}
+    ],
+    purchaseclose:[
+      {q:"Which date is the real deadline for the loan?",o:["Inspection contingency end","Mortgage contingency end","Listing date","First draw"],a:1,y:"The loan must be committed before the mortgage contingency ends."},
+      {q:"Title emails new wire instructions the day before closing. What do you do?",o:["Wire it","Reply to confirm","Stop, call title at a known number, and tell Matt","Forward to the seller"],a:2,y:"Never trust wire instructions from email."},
+      {q:"The appraisal ARV comes in low. What do you do?",o:["Ignore it","Tell Matt the same day. It can shrink the loan","Order a new house","Cancel the deal"],a:1,y:"A low ARV can change how much the lender funds."},
+      {q:"In Salesforce, the “Back-End ~” record is…",o:["Our purchase from the seller","Our sale to the end buyer","A dead deal","The lender’s file"],a:1,y:"Front end is the buy, back end is the sell."}
+    ],
+    setup:[
+      {q:"How many Ramp accounts per deal LLC?",o:["One","None","One for the whole company","One per contractor"],a:0,y:"One Ramp account per deal LLC, tied to its bank and QuickBooks."},
+      {q:"A property sold. What happens to its PSEG/Water row?",o:["Delete it","Leave it in Open Accounts","Close the accounts and move it to Closed Accounts with the date","Give it to the buyer"],a:2,y:"Closing accounts stops holding costs."},
+      {q:"What’s the right way to share a utility login?",o:["Text it","Post it in the group chat","Ask Matt where logins are kept, never paste them around","Write it in the tracker notes"],a:2,y:"Logins are company access. Protect them."}
+    ],
+    scope:[
+      {q:"Who walks the property to build the scope?",o:["The lender","Matt and Jerson","The buyer","Title"],a:1,y:"Every room, the exterior, and all systems, with photos and measurements."},
+      {q:"What’s wrong with “Kitchen reno: $18,000”?",o:["Nothing","It doesn’t say what gets built, so crews guess and inspectors can’t verify","It’s too cheap","It needs a date"],a:1,y:"Say what, how much, and what materials."},
+      {q:"Who prices licensed trades like electrical and plumbing?",o:["Catalina guesses","An outside sub, with a written quote","The lender","Nobody"],a:1,y:"Licensed trades get written quotes."},
+      {q:"Where does the approved scope go in the tracker?",o:["Section B, line by line","The PSEG tab","Nowhere","Section D"],a:0,y:"Section B tracks budgeted vs. actual per line."},
+      {q:"After approval, how does the scope change?",o:["Crew decides","Only by a written, priced, Matt-approved change order","Lender emails","It can’t"],a:1,y:"And it gets logged in Section F."}
+    ],
+    draws:[
+      {q:"What goes in a draw package?",o:["Just the amount","SOW line items, GC invoices, receipts, and site photos","The listing photos","The HUD"],a:1,y:"The lender needs proof the work is done."},
+      {q:"Genesis funds far less than requested. What do you do?",o:["Nothing","Log the variance and tell Matt the same day","Pay the GC in full anyway","Close the loan"],a:1,y:"A big variance means cash we planned on isn’t coming."},
+      {q:"When should you request a draw for a phase?",o:["Before work starts","When the work is complete and photographed","At closing","Whenever cash is low"],a:1,y:"Only request for completed, documented work."}
+    ],
+    paying:[
+      {q:"What must every Section A row have?",o:["An invoice number","A photo of the GC","The buyer’s name","Nothing"],a:0,y:"Invoice numbers prevent double-paying."},
+      {q:"Overage or savings is negative. What does that mean?",o:["Under budget","Invoiced more than the contract price","Lender owes us","Nothing"],a:1,y:"Negative means over contract. Every dollar over needs an approved change order."},
+      {q:"When do you check the ✓ column?",o:["When the invoice arrives","After payment is confirmed","At closing","Never"],a:1,y:"The check means paid and confirmed."}
+    ],
+    ramp:[
+      {q:"An expense belongs in which places?",o:["Section A and Section D","One place only","Every tab","Nowhere until closing"],a:1,y:"Duplicates make the books wrong."},
+      {q:"$34.91 for three properties. How do you split it?",o:["$34.91 on one property","$11.64, $11.64, $11.63 with a note","Skip it","$34.91 on each"],a:1,y:"Split evenly and note the total."},
+      {q:"Prorated property tax that gets paid back at closing should be marked…",o:["Reimbursable: Yes","Labor","Deleted","Equipment"],a:0,y:"So it doesn’t count against profit twice."},
+      {q:"Total spent doesn’t match total paid. What does it mean?",o:["Nothing","Something is missing or doubled","The lender made a mistake","The job is done"],a:1,y:"Find it before the week ends."}
+    ],
+    tracker:[
+      {q:"Which section holds lender draws?",o:["A","B","C","F"],a:2,y:"Section C is the draw tracker."},
+      {q:"Which section holds change orders?",o:["A","D","E","F"],a:3,y:"Section F: issues and change orders."},
+      {q:"The Dashboard says “Demo and cleanout, Not Started” but the house is 90% done. What do you do?",o:["Leave it","Update the phase to match the site","Delete the row","Change % complete to 0"],a:1,y:"The Dashboard has to match reality or it’s useless."}
+    ],
+    build:[
+      {q:"What must pass before drywall goes up?",o:["Staging","Rough MEP inspections","Final grass cut","Appraisal"],a:1,y:"Never cover uninspected work."},
+      {q:"Why take dated photos every visit?",o:["Social media","They’re draw evidence and protect us in disputes","They’re not needed","For the listing"],a:1,y:"Photos prove work for draws and payments."},
+      {q:"An open permit at the end of the job…",o:["Doesn’t matter","Blocks the CO and the sale","Is the buyer’s problem","Closes itself"],a:1,y:"Every permit must be signed off."}
+    ],
+    punch:[
+      {q:"When should the punch list be planned?",o:["Listing week","Before the end of the build","After closing","Never"],a:1,y:"Pre-plan it."},
+      {q:"What should the final invoice match?",o:["The draw budget","The contract balance","The listing price","Total Ramp spend"],a:1,y:"Final invoice should close out the contract cleanly."}
+    ],
+    makeready:[
+      {q:"What order is right?",o:["Photos, then staging","Clean and stage, then photos","Photos, then clean","List, then stage"],a:1,y:"Photos only after the house is clean and staged."},
+      {q:"Why plan make-ready early?",o:["It’s cheaper to rush","Holding costs run every day it’s not listed","Stagers require it","It isn’t important"],a:1,y:"Days on market cost money."}
+    ],
+    exam:[
+      {q:"Who is our in-house GC?",o:["Catalina Contracting","An outside sub","Kiavi","Genesis"],a:0,y:"Catalina."},
+      {q:"One Ramp account per…",o:["Company","Deal LLC","Contractor","Month"],a:1,y:"Per deal LLC."},
+      {q:"What must every GC invoice row have?",o:["Invoice number","Photo","Lender name","Nothing"],a:0,y:"Prevents double-paying."},
+      {q:"A charge is in Section A and Section D. That’s…",o:["Fine","A duplicate to fix","Required","A draw"],a:1,y:"One place only."},
+      {q:"Negative overage/savings means…",o:["Under budget","Over contract","Paid in full","Lender owes us"],a:1,y:"Over contract."},
+      {q:"Draw package includes…",o:["SOW, invoices, receipts, photos","Listing photos only","HUD only","Nothing"],a:0,y:"Proof of completed work."},
+      {q:"Genesis funds less than requested. First move?",o:["Log variance, tell Matt same day","Ignore it","Pay GC in full","Cancel the job"],a:0,y:"Cash we planned on isn’t coming."},
+      {q:"Change orders need…",o:["Matt’s approval and a Section F entry","Nothing","Lender approval only","A new contract"],a:0,y:"No approval, no work."},
+      {q:"Before drywall…",o:["Rough MEP inspections pass","Staging","Photos","Listing"],a:0,y:"Don’t cover uninspected work."},
+      {q:"A good scope line includes…",o:["What, how much, and what materials","Just a dollar amount","The buyer’s name","Only the room"],a:0,y:"Specific enough to build and to verify."},
+      {q:"Total spent should equal…",o:["Total paid","Loan amount","Listing price","Draw budget"],a:0,y:"If not, something’s missing or doubled."},
+      {q:"The loan must be committed before…",o:["Mortgage contingency end","Listing","First draw","Staging"],a:0,y:"That’s the real deadline."},
+      {q:"Wire instructions are confirmed by…",o:["Calling title at a known number","Replying to the email","Texting the seller","Nothing"],a:0,y:"Never trust wire instructions from email."},
+      {q:"PTD conditions must be…",o:["Cleared before closing docs are issued","Cleared after closing","Ignored","Sent to the buyer"],a:0,y:"Every PTD item green before closing."}
+    ]
+  };
+
+  const KEY = "lvg-pm-training-v1";
+  const COURSE = {id: 'project-management', name: 'Project Management', passMark: 11};
+  const RESULTS_URL = (window.LVG_CONFIG && window.LVG_CONFIG.RESULTS_URL) || "";
+  const PROFILE_KEY = "lvg-trainee-profile";
+  let state = {done:[],checks:{},quiz:{},trainee:null,attempts:0,best:null,outbox:[]};
+  try{ const s = localStorage.getItem(KEY); if(s){ state = Object.assign(state, JSON.parse(s)); } }catch(e){}
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  // ---------- reporting to Matt ----------
+  const QUIZ_KEYS = Object.keys(Q).filter(k=>k!=="exam");
+  function quizTitle(k){ const b = document.querySelector('.quiz[data-quiz="'+k+'"]'); const sec = b && b.closest("section"); return (sec && sec.dataset.title) || k; }
+  function snapshot(type, extra){
+    const total = document.querySelectorAll("section.module").length;
+    const quizzes = {};
+    QUIZ_KEYS.forEach(k=>{ quizzes[k] = {right: (k in state.quiz) ? state.quiz[k] : null, total: Q[k].length, title: quizTitle(k)}; });
+    return Object.assign({
+      type, ts: new Date().toISOString(),
+      course: COURSE.id, courseName: COURSE.name, passMark: COURSE.passMark, finalTotal: Q.exam ? Q.exam.length : null,
+      id: state.trainee.id, name: state.trainee.name, email: state.trainee.email,
+      modulesDone: state.done.length, modulesTotal: total,
+      quizzes, attempts: state.attempts, best: state.best,
+      page: location.href.split("#")[0]
+    }, extra||{});
+  }
+  function post(payload){
+    if(!RESULTS_URL) return Promise.reject(new Error("no-url"));
+    // text/plain keeps this a "simple" request, so the browser skips the CORS preflight Apps Script can't answer
+    return fetch(RESULTS_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(payload), keepalive:true});
+  }
+  function flush(){
+    if(!state.outbox.length || !RESULTS_URL) return;
+    state.outbox.slice().forEach(p=> post(p).then(()=>{ state.outbox = state.outbox.filter(x=>x.ts!==p.ts); save(); }).catch(()=>{}));
+  }
+  function report(type, extra){
+    if(!state.trainee) return Promise.resolve(false);
+    const p = snapshot(type, extra);
+    return post(p).then(()=>true).catch(()=>{ state.outbox.push(p); state.outbox = state.outbox.slice(-20); save(); return false; });
+  }
+
+  const sections = Array.from(document.querySelectorAll("section.module"));
+  const nav = document.getElementById("sideNav");
+  let html = "", lastGroup = "";
+  sections.forEach((s,i)=>{
+    const g = s.dataset.group;
+    if(g !== lastGroup){ if(lastGroup) html += "</ol>"; html += '<div class="navgroup">'+g+'</div><ol>'; lastGroup = g; }
+    const label = i===0 ? "Go" : (s.id==="exam" ? "Fin" : String(i));
+    html += '<li><button data-id="'+s.id+'"><span class="tag">'+label+'</span><span>'+s.dataset.title+'</span></button></li>';
+  });
+  html += "</ol>";
+  nav.innerHTML = html;
+
+  const menuBtn = document.getElementById("menuBtn");
+  menuBtn.addEventListener("click",()=>{ const o = nav.classList.toggle("open"); menuBtn.setAttribute("aria-expanded", o); });
+
+  let current = 0;
+  function show(id, scroll){
+    if(!state.trainee && id!=="welcome"){ id = "welcome"; document.getElementById("gateNote").hidden = false; setTimeout(()=>document.getElementById("tName").focus(),0); }
+    const idx = Math.max(0, sections.findIndex(s=>s.id===id));
+    current = idx;
+    sections.forEach((s,i)=> s.hidden = i!==idx);
+    nav.querySelectorAll("button").forEach(b=> b.setAttribute("aria-current", b.dataset.id===sections[idx].id ? "true":"false"));
+    document.getElementById("prevBtn").style.visibility = idx===0 ? "hidden" : "visible";
+    const doneBtn = document.getElementById("doneBtn");
+    const isLast = idx === sections.length-1;
+    doneBtn.textContent = isLast ? (state.done.includes(sections[idx].id) ? "Course complete" : "Mark course complete") : (state.done.includes(sections[idx].id) ? "Next module" : "Mark done and continue");
+    try{ history.replaceState(null,"","#"+sections[idx].id); }catch(e){}
+    nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded","false");
+    if(scroll!==false) window.scrollTo({top:0,behavior:"auto"});
+  }
+  nav.addEventListener("click",e=>{ const b = e.target.closest("button[data-id]"); if(b) show(b.dataset.id); });
+  document.getElementById("prevBtn").addEventListener("click",()=> show(sections[Math.max(0,current-1)].id));
+  document.getElementById("doneBtn").addEventListener("click",()=>{
+    const id = sections[current].id;
+    if(!state.done.includes(id)){ state.done.push(id); save(); report("progress",{event:"module-done",module:id}); }
+    refreshProgress();
+    if(current < sections.length-1) show(sections[current+1].id); else show(id);
+  });
+  function refreshProgress(){
+    const total = sections.length, d = sections.filter(s=>state.done.includes(s.id)).length;
+    document.getElementById("barFill").style.width = (d/total*100)+"%";
+    document.getElementById("progText").textContent = d+" of "+total+" done";
+    nav.querySelectorAll("button").forEach(b=> b.classList.toggle("done", state.done.includes(b.dataset.id)));
+  }
+
+  document.querySelectorAll(".quiz[data-quiz]").forEach(box=>{
+    const key = box.dataset.quiz, qs = Q[key]; if(!qs) return;
+    const title = key==="exam" ? "Final check" : "Quick check";
+    let h = '<h3>'+title+' <small>'+qs.length+' questions</small></h3>';
+    qs.forEach((q,qi)=>{
+      h += '<div class="q" data-qi="'+qi+'"><p class="qt">'+(qi+1)+'. '+q.q+'</p><div class="opts">';
+      q.o.forEach((o,oi)=>{ h += '<button class="opt" data-oi="'+oi+'">'+o+'</button>'; });
+      h += '</div><div class="why" hidden></div></div>';
+    });
+    h += '<div class="result" aria-live="polite"></div><div class="quiz-actions"><button class="btn ghost retry">Try again</button></div>';
+    box.innerHTML = h;
+    const answers = {};
+    function score(){
+      const n = Object.keys(answers).length, right = Object.values(answers).filter(Boolean).length;
+      const r = box.querySelector(".result");
+      if(n === qs.length){
+        r.textContent = "You got "+right+" of "+qs.length+" right.";
+        state.quiz[key] = right; save();
+        if(key==="exam"){
+          const passed = right >= COURSE.passMark;
+          state.attempts = (state.attempts||0) + 1;
+          state.best = Math.max(state.best==null ? -1 : state.best, right);
+          save();
+          document.getElementById("examStamp").innerHTML = (passed ? '<div class="stamp">Ready for the job site</div><p>Nice work. Get assigned your first live job.</p>' : '<p><b>Not yet.</b> Review the modules where you missed questions, then try again. You need 11 of 14.</p>') + '<p class="sendnote" id="sendNote">Sending your result to Matt…</p>';
+          report("final",{finalScore:right, finalTotal:qs.length, passed, attempts:state.attempts, best:state.best}).then(ok=>{
+            const n = document.getElementById("sendNote"); if(!n) return;
+            if(ok){ n.className = "sendnote ok"; n.textContent = "Your result was sent to Matt."; }
+            else { n.className = "sendnote bad"; n.textContent = RESULTS_URL ? "Couldn’t reach the results server. It will retry next time you open the course." : "Results reporting isn’t set up yet. Tell Matt your score."; }
+          });
+        } else {
+          report("progress",{event:"quiz", module:key, right, total:qs.length});
+        }
+      } else { r.textContent = ""; }
+    }
+    box.addEventListener("click",e=>{
+      const b = e.target.closest(".opt");
+      if(b){
+        const qd = b.closest(".q"), qi = +qd.dataset.qi, q = qs[qi];
+        if(qi in answers) return;
+        const chosen = +b.dataset.oi, ok = chosen===q.a;
+        answers[qi] = ok;
+        qd.querySelectorAll(".opt").forEach((x,xi)=>{ x.disabled = true; if(xi===q.a) x.classList.add("right"); else if(xi===chosen) x.classList.add("wrong"); });
+        const w = qd.querySelector(".why"); w.hidden = false; w.innerHTML = '<b>'+(ok?"Right.":"Not quite.")+'</b> '+q.y;
+        score();
+      }
+      if(e.target.closest(".retry")){
+        Object.keys(answers).forEach(k=> delete answers[k]);
+        box.querySelectorAll(".opt").forEach(x=>{ x.disabled=false; x.classList.remove("right","wrong"); });
+        box.querySelectorAll(".why").forEach(w=>{ w.hidden = true; w.innerHTML=""; });
+        box.querySelector(".result").textContent = "";
+        if(key==="exam") document.getElementById("examStamp").innerHTML = "";
+      }
+    });
+  });
+
+  document.getElementById("scenList").innerHTML = SCEN.map((s,i)=>
+    '<div class="scen"><div class="where">'+s.w+'</div><h4>'+s.t+'</h4><p>'+s.s+'</p><button class="reveal" aria-expanded="false" aria-controls="ans'+i+'">Show what to do</button><div class="answer" id="ans'+i+'" hidden>'+s.a+'</div></div>'
+  ).join("");
+  document.getElementById("scenList").addEventListener("click",e=>{
+    const b = e.target.closest(".reveal"); if(!b) return;
+    const a = document.getElementById(b.getAttribute("aria-controls"));
+    const open = a.hidden; a.hidden = !open; b.setAttribute("aria-expanded", open); b.textContent = open ? "Hide answer" : "Show what to do";
+  });
+
+  document.getElementById("checklist").innerHTML = WEEKS.map((w,wi)=>
+    '<div class="week"><h3>'+w.h+'</h3>'+w.items.map((it,ii)=>{ const k = wi+"-"+ii; return '<label><input type="checkbox" data-k="'+k+'"'+(state.checks[k]?' checked':'')+'><span>'+it+'</span></label>'; }).join("")+'</div>'
+  ).join("");
+  document.getElementById("checklist").addEventListener("change",e=>{
+    const c = e.target.closest("input[data-k]"); if(!c) return;
+    state.checks[c.dataset.k] = c.checked; save();
+  });
+
+  // ---------- trainee ----------
+  function readProfile(){ try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||"null"); }catch(e){ return null; } }
+  function renderTrainee(){
+    const t = state.trainee;
+    document.getElementById("traineeForm").hidden = !!t;
+    document.getElementById("traineeWho").hidden = !t;
+    document.getElementById("traineeBox").classList.toggle("signed", !!t);
+    document.getElementById("whoami").textContent = t ? t.name : "";
+    if(t){
+      document.getElementById("whoName").textContent = t.name;
+      document.getElementById("whoEmail").textContent = t.email || "";
+      document.getElementById("gateNote").hidden = true;
+    } else {
+      const p = readProfile();
+      if(p){ document.getElementById("tName").value = p.name||""; document.getElementById("tEmail").value = p.email||""; }
+    }
+  }
+  document.getElementById("traineeForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const name = document.getElementById("tName").value.trim().replace(/\s+/g," ");
+    const email = document.getElementById("tEmail").value.trim();
+    const err = document.getElementById("tErr");
+    if(name.split(" ").length < 2){ err.hidden = false; err.textContent = "Enter your first and last name."; document.getElementById("tName").focus(); return; }
+    if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.hidden = false; err.textContent = "That email doesn’t look right."; document.getElementById("tEmail").focus(); return; }
+    err.hidden = true;
+    const p = readProfile();
+    const id = (p && p.name === name && p.id) ? p.id : (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random().toString(16).slice(2));
+    state.trainee = {name, email, id, started: new Date().toISOString()};
+    try{ localStorage.setItem(PROFILE_KEY, JSON.stringify({name, email, id})); }catch(e){}
+    save(); renderTrainee();
+    report("progress",{event:"started"});
+  });
+  document.getElementById("notMe").addEventListener("click",()=>{
+    if(!confirm("Switch trainee? This clears progress saved in this browser for "+state.trainee.name+". Their results already sent to Matt are kept.")) return;
+    state = {done:[],checks:{},quiz:{},trainee:null,attempts:0,best:null,outbox:state.outbox};
+    try{ localStorage.removeItem(PROFILE_KEY); }catch(e){}
+    save(); location.hash = "welcome"; location.reload();
+  });
+  if(!Array.isArray(state.outbox)) state.outbox = [];
+  renderTrainee();
+  flush();
+  refreshProgress();
+  const start = (location.hash||"").replace("#","");
+  show(sections.some(s=>s.id===start) ? start : "welcome", false);
+})();
+</script>
+</body>
+</html>
