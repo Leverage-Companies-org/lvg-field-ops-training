@@ -26,6 +26,9 @@ const ROSTER_HEADERS = ['Trainee ID', 'Name', 'Email', 'Status', 'Best final', '
 const LOG_HEADERS = ['Timestamp', 'Type', 'Event', 'Name', 'Email', 'Final score', 'Passed',
   'Attempt', 'Modules done', 'Module', 'Raw'];
 
+// Leading apostrophe stops Sheets turning "12/12" into a date.
+function txt_(v) { return v === '' || v == null ? '' : "'" + String(v).replace(/^'/, ''); }
+
 function props_() { return PropertiesService.getScriptProperties(); }
 
 function sheet_(name, headers) {
@@ -63,8 +66,8 @@ function doPost(e) {
   try {
     const log = sheet_('Log', LOG_HEADERS);
     log.appendRow([new Date(d.ts || Date.now()), d.type, d.event || (d.type === 'final' ? 'final-check' : ''),
-      d.name, d.email, d.type === 'final' ? d.finalScore + '/' + d.finalTotal : '',
-      d.type === 'final' ? (d.passed ? 'Yes' : 'No') : '', d.attempts || '', d.modulesDone + '/' + d.modulesTotal,
+      d.name, d.email, d.type === 'final' ? txt_(d.finalScore + '/' + d.finalTotal) : '',
+      d.type === 'final' ? (d.passed ? 'Yes' : 'No') : '', d.attempts || '', txt_(d.modulesDone + '/' + d.modulesTotal),
       d.module || '', JSON.stringify(d).slice(0, 4000)]);
     upsertRoster_(d);
   } finally {
@@ -83,20 +86,20 @@ function upsertRoster_(d) {
   const now = new Date(d.ts || Date.now());
 
   const q = quizSummary_(d.quizzes);
-  let best = cur ? cur[4] : '', latest = cur ? cur[5] : '', attempts = cur ? cur[6] : 0, passedOn = cur ? cur[12] : '';
+  let best = cur && !(cur[4] instanceof Date) ? cur[4] : '', latest = cur && !(cur[5] instanceof Date) ? cur[5] : '', attempts = cur ? cur[6] : 0, passedOn = cur ? cur[12] : '';
   if (d.type === 'final') {
     latest = d.finalScore + '/' + d.finalTotal;
     attempts = Math.max(Number(attempts) || 0, d.attempts || 1);
-    const prevBest = best ? Number(String(best).split('/')[0]) : -1;
+    const prevBest = best ? Number(String(best).replace(/^'/, '').split('/')[0]) : -1;
     if (d.finalScore > prevBest) best = latest;
     if (d.passed && !passedOn) passedOn = now;
   }
-  const bestNum = best ? Number(String(best).split('/')[0]) : null;
+  const bestNum = best ? Number(String(best).replace(/^'/, '').split('/')[0]) : null;
   const status = bestNum != null && bestNum >= PASS_MARK ? 'Passed'
     : attempts > 0 ? 'Not passed yet' : 'In progress';
 
-  const values = [d.id, d.name, d.email, status, best, latest, attempts,
-    d.modulesDone + '/' + d.modulesTotal, q.avg, q.detail, cur ? cur[10] : now, now, passedOn];
+  const values = [d.id, d.name, d.email, status, txt_(best), txt_(latest), attempts,
+    txt_(d.modulesDone + '/' + d.modulesTotal), q.avg, q.detail, cur ? cur[10] : now, now, passedOn];
   if (row >= 0) sh.getRange(row + 2, 1, 1, values.length).setValues([values]);
   else sh.appendRow(values);
 }
