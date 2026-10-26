@@ -60,7 +60,7 @@ tr:last-child td{border-bottom:0}
 </head>
 <body>
 <header class="top">
-  <div><h1>Field Ops Training Results</h1><small id="updated"></small></div>
+  <div><h1>LVG Training Results</h1><small id="updated"></small> · <a href="./" style="color:#fff;font-size:.85rem">All courses</a></div>
   <div style="display:flex;gap:8px">
     <button class="btn ghost" id="refresh" style="color:#fff;border-color:#fff" hidden>Refresh</button>
     <button class="btn ghost" id="logout" style="color:#fff;border-color:#fff" hidden>Lock</button>
@@ -79,12 +79,13 @@ tr:last-child td{border-bottom:0}
     <div class="kpis" id="kpis"></div>
     <div class="bar">
       <input id="q" type="search" placeholder="Search by name or email">
+      <select id="c" aria-label="Filter by course"><option value="">All courses</option></select>
       <select id="f" aria-label="Filter by status">
         <option value="">All statuses</option><option>Passed</option><option>Not passed yet</option><option>In progress</option>
       </select>
     </div>
     <div class="card"><table>
-      <thead><tr><th>Trainee</th><th>Status</th><th>Best final</th><th class="hide-sm">Attempts</th><th>Modules</th><th class="hide-sm">Module quizzes</th><th class="hide-sm">Last activity</th></tr></thead>
+      <thead><tr><th>Trainee</th><th>Course</th><th>Status</th><th>Best final</th><th class="hide-sm">Attempts</th><th>Modules</th><th class="hide-sm">Module quizzes</th><th class="hide-sm">Last activity</th></tr></thead>
       <tbody id="rows"></tbody>
     </table></div>
   </div>
@@ -115,21 +116,30 @@ tr:last-child td{border-bottom:0}
       const r = await fetch(URL_ + (URL_.includes("?")?"&":"?") + "key=" + encodeURIComponent(key), {cache:"no-store"});
       const j = await r.json();
       if(!j.ok){ setKey(""); $("login").hidden = false; $("app").hidden = true; $("loginErr").hidden = false; $("loginErr").textContent = "That key didn’t work."; return; }
+      const clean = v => typeof v === "string" ? v.replace(/^'/, "") : v;
+      j.trainees.forEach(x=>{ x.best = clean(x.best); x.latest = clean(x.latest); x.modules = clean(x.modules); });
       data = j; $("login").hidden = true; $("app").hidden = false; $("refresh").hidden = false; $("logout").hidden = false; msg("");
       $("updated").textContent = "Updated " + new Date(j.generated).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}) + " · refreshes every minute";
       render();
     }catch(e){ msg("Couldn’t reach the results server. Check your connection and try Refresh."); }
   }
 
+  function fillCourses(){
+    const sel = $("c"); if(sel.dataset.filled) return;
+    Object.keys(data.courses||{}).forEach(id=>{ const o = document.createElement("option"); o.value = id; o.textContent = data.courses[id].name; sel.appendChild(o); });
+    sel.dataset.filled = "1";
+  }
   function render(){
-    const t = data.trainees.slice().sort((a,b)=> String(b.last).localeCompare(String(a.last)));
+    fillCourses();
+    const cf = $("c").value;
+    const t = data.trainees.filter(x=> !cf || x.course===cf).sort((a,b)=> String(b.last).localeCompare(String(a.last)));
     const passed = t.filter(x=>x.status==="Passed").length;
     const notYet = t.filter(x=>x.status==="Not passed yet").length;
     const prog = t.filter(x=>x.status==="In progress").length;
-    const bests = t.map(x=>frac(x.best)).filter(Boolean);
-    const avg = bests.length ? (bests.reduce((s,f)=>s+f[0],0)/bests.length).toFixed(1) : "–";
+    const bests = t.map(x=>frac(x.best)).filter(f=>f && f[1]);
+    const avg = bests.length ? Math.round(bests.reduce((s,f)=>s+f[0]/f[1],0)/bests.length*100)+"%" : "–";
     $("kpis").innerHTML = [
-      [t.length,"Trainees"],[passed,"Passed final"],[notYet,"Not passed yet"],[prog,"Still in course"],[avg + (bests.length?" / "+bests[0][1]:""),"Avg best final"]
+      [t.length,"Trainees"],[passed,"Passed final"],[notYet,"Not passed yet"],[prog,"Still in course"],[avg,"Avg best final"]
     ].map(k=>'<div class="kpi"><b>'+esc(k[0])+'</b><span>'+k[1]+'</span></div>').join("");
 
     const q = $("q").value.trim().toLowerCase(), f = $("f").value;
@@ -138,13 +148,14 @@ tr:last-child td{border-bottom:0}
       const cls = x.status==="Passed" ? "pass" : x.status==="Not passed yet" ? "fail" : "prog";
       const m = frac(x.modules), pct = m && m[1] ? Math.round(m[0]/m[1]*100) : 0;
       return '<tr><td><b>'+esc(x.name)+'</b><div class="sub">'+esc(x.email)+'</div></td>'+
+        '<td>'+esc(x.courseName||"")+'</td>'+
         '<td><span class="pill '+cls+'">'+esc(x.status)+'</span>'+(x.passedOn?'<div class="sub">'+when(x.passedOn)+'</div>':'')+'</td>'+
         '<td class="num">'+(x.best?'<b>'+esc(x.best)+'</b>'+(x.latest && x.latest!==x.best?'<div class="sub">latest '+esc(x.latest)+'</div>':''):'<span class="sub">not taken</span>')+'</td>'+
         '<td class="num hide-sm">'+esc(x.attempts||0)+'</td>'+
         '<td class="num">'+esc(x.modules)+'<div class="meter"><i style="width:'+pct+'%"></i></div></td>'+
         '<td class="hide-sm"><b>'+esc(x.quizAvg||"–")+'</b><div class="detail">'+esc(x.quizDetail)+'</div></td>'+
         '<td class="hide-sm num">'+when(x.last)+'</td></tr>';
-    }).join("") : '<tr><td colspan="7" class="empty">'+(t.length?"No trainees match.":"No one has started the course yet.")+'</td></tr>';
+    }).join("") : '<tr><td colspan="8" class="empty">'+(t.length?"No trainees match.":"No one has started the course yet.")+'</td></tr>';
   }
 
   $("login").addEventListener("submit",e=>{ e.preventDefault(); setKey($("key").value.trim()); $("loginErr").hidden = true; load(); });
@@ -152,6 +163,7 @@ tr:last-child td{border-bottom:0}
   $("refresh").addEventListener("click",load);
   $("q").addEventListener("input",()=> data && render());
   $("f").addEventListener("change",()=> data && render());
+  $("c").addEventListener("change",()=> data && render());
   load(); timer = setInterval(load, 60000);
 })();
 </script>
