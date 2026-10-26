@@ -117,7 +117,7 @@ tr:last-child td{border-bottom:0}
       const j = await r.json();
       if(!j.ok){ setKey(""); $("login").hidden = false; $("app").hidden = true; $("loginErr").hidden = false; $("loginErr").textContent = "That key didn’t work."; return; }
       const clean = v => typeof v === "string" ? v.replace(/^'/, "") : v;
-      j.trainees.forEach(x=>{ x.best = clean(x.best); x.latest = clean(x.latest); x.modules = clean(x.modules); });
+      j.trainees.forEach(x=>{ x.best = clean(x.best); x.latest = clean(x.latest); x.modules = clean(x.modules); if (typeof x.quizAvg === "number") x.quizAvg = Math.round(x.quizAvg * 100) + "%"; });
       data = j; $("login").hidden = true; $("app").hidden = false; $("refresh").hidden = false; $("logout").hidden = false; msg("");
       $("updated").textContent = "Updated " + new Date(j.generated).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}) + " · refreshes every minute";
       render();
