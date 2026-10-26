@@ -1,5 +1,5 @@
 /**
- * LVG Field Ops Training — results backend
+ * LVG Training — results backend (all courses)
  *
  * Lives inside a Google Sheet (Extensions > Apps Script). It:
  *   - logs every event from the course to the "Log" tab
@@ -15,16 +15,18 @@
  *                      or Workflow Builder webhook with a "text" variable)
  */
 
-const PASS_MARK = 10;
-const MODULE_NAMES = {
-  culture: 'Who we are', team: 'Roles', lifecycle: 'Route to closing', rhythm: 'Daily rhythm',
-  inspections: 'CO & fire', permits: 'Permits & blockers', money: 'Money', systems: 'Tools',
-  tenants: 'Tenants', safety: 'Site safety', closeout: 'Close-out'
+// Pass marks live here (server side) so a page can't lower its own bar.
+const COURSES = {
+  'field-ops': { name: 'Field Ops', passMark: 10 },
+  'project-management': { name: 'Project Management', passMark: 11 }
 };
+const DEFAULT_COURSE = 'field-ops';  // rows/events sent before courses existed
 const ROSTER_HEADERS = ['Trainee ID', 'Name', 'Email', 'Status', 'Best final', 'Latest final',
-  'Final attempts', 'Modules done', 'Module quiz avg', 'Module quiz detail', 'Started', 'Last activity', 'Passed on'];
+  'Final attempts', 'Modules done', 'Module quiz avg', 'Module quiz detail', 'Started', 'Last activity', 'Passed on', 'Course'];
 const LOG_HEADERS = ['Timestamp', 'Type', 'Event', 'Name', 'Email', 'Final score', 'Passed',
-  'Attempt', 'Modules done', 'Module', 'Raw'];
+  'Attempt', 'Modules done', 'Module', 'Raw', 'Course'];
+
+function course_(id) { return COURSES[id] ? id : DEFAULT_COURSE; }
 
 // Leading apostrophe stops Sheets turning "12/12" into a date.
 function txt_(v) { return v === '' || v == null ? '' : "'" + String(v).replace(/^'/, ''); }
@@ -39,6 +41,10 @@ function sheet_(name, headers) {
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#17203A').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
+  } else if (sh.getLastColumn() < headers.length) {
+    // older sheet: add any new header columns
+    sh.getRange(1, 1, 1, headers.length).setValues([headers])
+      .setFontWeight('bold').setBackground('#17203A').setFontColor('#FFFFFF');
   }
   return sh;
 }
@@ -50,7 +56,7 @@ function setup() {
   const p = props_();
   if (!p.getProperty('DASHBOARD_KEY')) p.setProperty('DASHBOARD_KEY', Utilities.getUuid());
   Logger.log('DASHBOARD_KEY = ' + p.getProperty('DASHBOARD_KEY'));
-  const r = notifySlack_(':white_check_mark: LVG Field Ops Training is connected. Final check results will show up here.');
+  const r = notifySlack_(':white_check_mark: LVG Training is connected. Final check results will show up here.');
   Logger.log('Slack test: ' + r);
 }
 
@@ -60,6 +66,9 @@ function doPost(e) {
   if (!d || !d.id || !d.name || ['progress', 'final'].indexOf(d.type) < 0) return json_({ ok: false, error: 'bad payload' });
   d.name = String(d.name).slice(0, 80);
   d.email = String(d.email || '').slice(0, 120);
+  d.course = course_(d.course);
+  d.passMark = COURSES[d.course].passMark;
+  d.courseName = COURSES[d.course].name;
 
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -68,7 +77,7 @@ function doPost(e) {
     log.appendRow([new Date(d.ts || Date.now()), d.type, d.event || (d.type === 'final' ? 'final-check' : ''),
       d.name, d.email, d.type === 'final' ? txt_(d.finalScore + '/' + d.finalTotal) : '',
       d.type === 'final' ? (d.passed ? 'Yes' : 'No') : '', d.attempts || '', txt_(d.modulesDone + '/' + d.modulesTotal),
-      d.module || '', JSON.stringify(d).slice(0, 4000)]);
+      d.module || '', JSON.stringify(d).slice(0, 4000), d.courseName]);
     upsertRoster_(d);
   } finally {
     lock.releaseLock();
@@ -80,8 +89,10 @@ function doPost(e) {
 
 function upsertRoster_(d) {
   const sh = sheet_('Trainees', ROSTER_HEADERS);
-  const ids = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues().map(r => r[0]) : [];
-  let row = ids.indexOf(d.id);
+  const keys = sh.getLastRow() > 1
+    ? sh.getRange(2, 1, sh.getLastRow() - 1, ROSTER_HEADERS.length).getValues().map(r => r[0] + '|' + course_(courseIdFromName_(r[13])))
+    : [];
+  let row = keys.indexOf(d.id + '|' + d.course);
   let cur = row >= 0 ? sh.getRange(row + 2, 1, 1, ROSTER_HEADERS.length).getValues()[0] : null;
   const now = new Date(d.ts || Date.now());
 
@@ -95,31 +106,39 @@ function upsertRoster_(d) {
     if (d.passed && !passedOn) passedOn = now;
   }
   const bestNum = best ? Number(String(best).replace(/^'/, '').split('/')[0]) : null;
-  const status = bestNum != null && bestNum >= PASS_MARK ? 'Passed'
+  const status = bestNum != null && bestNum >= d.passMark ? 'Passed'
     : attempts > 0 ? 'Not passed yet' : 'In progress';
 
   const values = [d.id, d.name, d.email, status, txt_(best), txt_(latest), attempts,
-    txt_(d.modulesDone + '/' + d.modulesTotal), q.avg, q.detail, cur ? cur[10] : now, now, passedOn];
+    txt_(d.modulesDone + '/' + d.modulesTotal), q.avg, q.detail, cur ? cur[10] : now, now, passedOn, d.courseName];
   if (row >= 0) sh.getRange(row + 2, 1, 1, values.length).setValues([values]);
   else sh.appendRow(values);
 }
+
+function courseIdFromName_(name) {
+  if (!name) return DEFAULT_COURSE;
+  for (const id in COURSES) if (COURSES[id].name === name) return id;
+  return DEFAULT_COURSE;
+}
+
+function quizName_(k, v) { return (v && v.title) || k; }
 
 function quizSummary_(quizzes) {
   let right = 0, total = 0;
   const parts = [];
   Object.keys(quizzes || {}).forEach(k => {
     const v = quizzes[k];
-    if (v && v.right != null) { right += v.right; total += v.total; parts.push((MODULE_NAMES[k] || k) + ' ' + v.right + '/' + v.total); }
+    if (v && v.right != null) { right += v.right; total += v.total; parts.push(quizName_(k, v) + ' ' + v.right + '/' + v.total); }
   });
   return { avg: total ? Math.round(right / total * 100) + '%' : '', detail: parts.join(' · '), right, total };
 }
 
 function slackText_(d) {
   const q = quizSummary_(d.quizzes);
-  const missing = Object.keys(d.quizzes || {}).filter(k => d.quizzes[k].right == null).map(k => MODULE_NAMES[k] || k);
+  const missing = Object.keys(d.quizzes || {}).filter(k => d.quizzes[k].right == null).map(k => quizName_(k, d.quizzes[k]));
   return [
     (d.passed ? ':white_check_mark: *' : ':x: *') + d.name + '* ' + (d.passed ? 'passed' : 'did not pass') +
-      ' the Field Ops final check: *' + d.finalScore + '/' + d.finalTotal + '* (need ' + PASS_MARK + ')',
+      ' the ' + d.courseName + ' final check: *' + d.finalScore + '/' + d.finalTotal + '* (need ' + d.passMark + ')',
     'Attempt ' + (d.attempts || 1) + (d.best != null && d.best !== d.finalScore ? ' · best so far ' + d.best + '/' + d.finalTotal : ''),
     'Modules marked done: ' + d.modulesDone + '/' + d.modulesTotal +
       (q.total ? ' · module quizzes ' + q.right + '/' + q.total + ' (' + q.avg + ')' : ''),
@@ -163,9 +182,10 @@ function doGet(e) {
     modules: r[7], quizAvg: r[8], quizDetail: r[9],
     started: r[10] instanceof Date ? r[10].toISOString() : r[10],
     last: r[11] instanceof Date ? r[11].toISOString() : r[11],
-    passedOn: r[12] instanceof Date ? r[12].toISOString() : r[12]
+    passedOn: r[12] instanceof Date ? r[12].toISOString() : r[12],
+    course: courseIdFromName_(r[13]), courseName: COURSES[courseIdFromName_(r[13])].name
   }));
-  return json_({ ok: true, passMark: PASS_MARK, generated: new Date().toISOString(), trainees: trainees });
+  return json_({ ok: true, courses: COURSES, generated: new Date().toISOString(), trainees: trainees });
 }
 
 function json_(o) {
