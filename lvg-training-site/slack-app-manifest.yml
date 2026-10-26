@@ -1,0 +1,17 @@
+display_information:
+  name: LVG Training
+  description: Sends Field Ops training results to Matt
+  background_color: "#1d6a43"
+features:
+  bot_user:
+    display_name: LVG Training
+    always_online: false
+oauth_config:
+  scopes:
+    bot:
+      - chat:write
+      - im:write
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

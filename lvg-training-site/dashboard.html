@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Training Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEFF1; --surface:#FFFFFF; --soft:#E2E6EB; --ink:#17203A; --muted:#566079; --line:#CDD3DB;
+  --sign:#1D6A43; --yellow:#F2B705; --yellow-ink:#1B1B1B; --red:#B3322A; --green:#2D7A4C; --blue:#2B5DA8; --focus:#2B5DA8;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1626; --surface:#172036; --soft:#1F2A44; --ink:#E6EAF1; --muted:#9BA6BB; --line:#2A3654;
+    --sign:#1F7148; --red:#E36A5F; --green:#5FBF89; --blue:#7FA8EA; --focus:#F2B705; color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;line-height:1.5}
+.top{background:var(--sign);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.top h1{margin:0;font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:1.7rem;letter-spacing:.02em;text-transform:uppercase}
+.top small{opacity:.85}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi b{display:block;font-family:"Big Shoulders Display",Impact,sans-serif;font-size:2.2rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:.9rem;font-weight:600}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.bar input,.bar select{font:inherit;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.bar input{flex:1 1 220px}
+.btn{font:inherit;font-weight:700;padding:9px 16px;border-radius:10px;border:2px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:.94rem}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--soft);white-space:nowrap}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;font-weight:700;font-size:.8rem;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill.pass{background:var(--green);color:#fff}
+.pill.fail{background:var(--red);color:#fff}
+.pill.prog{background:var(--yellow);color:var(--yellow-ink)}
+.meter{width:90px;height:8px;background:var(--soft);border-radius:4px;overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%;background:var(--sign)}
+.detail{color:var(--muted);font-size:.82rem;max-width:40ch}
+.sub{color:var(--muted);font-size:.82rem}
+.empty,.msg{padding:28px;text-align:center;color:var(--muted)}
+.login{max-width:420px;margin:40px auto;background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:22px}
+.login h2{margin:0 0 6px}
+.login input{width:100%;font:inherit;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin:10px 0}
+.err{color:var(--red);font-weight:700}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media (max-width:700px){ .hide-sm{display:none} }
+</style>
+</head>
+<body>
+<header class="top">
+  <div><h1>LVG Training Results</h1><small id="updated"></small> · <a href="./" style="color:#fff;font-size:.85rem">All courses</a></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn ghost" id="refresh" style="color:#fff;border-color:#fff" hidden>Refresh</button>
+    <button class="btn ghost" id="logout" style="color:#fff;border-color:#fff" hidden>Lock</button>
+  </div>
+</header>
+<main>
+  <form class="login" id="login" hidden>
+    <h2>Enter the dashboard key</h2>
+    <p class="sub">It’s the DASHBOARD_KEY from the Apps Script setup. This browser remembers it.</p>
+    <input id="key" type="password" autocomplete="current-password" required>
+    <button class="btn" type="submit">Open results</button>
+    <p class="err" id="loginErr" hidden></p>
+  </form>
+
+  <div id="app" hidden>
+    <div class="kpis" id="kpis"></div>
+    <div class="bar">
+      <input id="q" type="search" placeholder="Search by name or email">
+      <select id="c" aria-label="Filter by course"><option value="">All courses</option></select>
+      <select id="f" aria-label="Filter by status">
+        <option value="">All statuses</option><option>Passed</option><option>Not passed yet</option><option>In progress</option>
+      </select>
+    </div>
+    <div class="card"><table>
+      <thead><tr><th>Trainee</th><th>Course</th><th>Status</th><th>Best final</th><th class="hide-sm">Attempts</th><th>Modules</th><th class="hide-sm">Module quizzes</th><th class="hide-sm">Last activity</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+  </div>
+  <div class="msg" id="msg" hidden></div>
+</main>
+<script src="config.js"></script>
+<script>
+(function(){
+  const URL_ = (window.LVG_CONFIG && window.LVG_CONFIG.RESULTS_URL) || "";
+  const KK = "lvg-dashboard-key";
+  let data = null, timer = null;
+  const $ = id => document.getElementById(id);
+  const getKey = () => { try{ return localStorage.getItem(KK) || ""; }catch(e){ return ""; } };
+  const setKey = k => { try{ k ? localStorage.setItem(KK,k) : localStorage.removeItem(KK); }catch(e){} };
+  const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const when = iso => { if(!iso) return ""; const d = new Date(iso); if(isNaN(d)) return esc(iso);
+    const diff = (Date.now()-d)/60000; if(diff<1) return "just now"; if(diff<60) return Math.round(diff)+" min ago";
+    if(diff<1440) return Math.round(diff/60)+" hr ago"; return d.toLocaleDateString(undefined,{month:"short",day:"numeric"}); };
+  const frac = s => { const m = String(s||"").split("/"); return m.length===2 ? [+m[0],+m[1]] : null; };
+
+  function msg(t){ $("msg").hidden = !t; $("msg").textContent = t||""; }
+
+  async function load(){
+    const key = getKey();
+    if(!URL_){ msg("Results server isn’t set up yet. Add the Apps Script URL to config.js."); return; }
+    if(!key){ $("login").hidden = false; $("app").hidden = true; return; }
+    try{
+      const r = await fetch(URL_ + (URL_.includes("?")?"&":"?") + "key=" + encodeURIComponent(key), {cache:"no-store"});
+      const j = await r.json();
+      if(!j.ok){ setKey(""); $("login").hidden = false; $("app").hidden = true; $("loginErr").hidden = false; $("loginErr").textContent = "That key didn’t work."; return; }
+      const clean = v => typeof v === "string" ? v.replace(/^'/, "") : v;
+      j.trainees.forEach(x=>{ x.best = clean(x.best); x.latest = clean(x.latest); x.modules = clean(x.modules); });
+      data = j; $("login").hidden = true; $("app").hidden = false; $("refresh").hidden = false; $("logout").hidden = false; msg("");
+      $("updated").textContent = "Updated " + new Date(j.generated).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}) + " · refreshes every minute";
+      render();
+    }catch(e){ msg("Couldn’t reach the results server. Check your connection and try Refresh."); }
+  }
+
+  function fillCourses(){
+    const sel = $("c"); if(sel.dataset.filled) return;
+    Object.keys(data.courses||{}).forEach(id=>{ const o = document.createElement("option"); o.value = id; o.textContent = data.courses[id].name; sel.appendChild(o); });
+    sel.dataset.filled = "1";
+  }
+  function render(){
+    fillCourses();
+    const cf = $("c").value;
+    const t = data.trainees.filter(x=> !cf || x.course===cf).sort((a,b)=> String(b.last).localeCompare(String(a.last)));
+    const passed = t.filter(x=>x.status==="Passed").length;
+    const notYet = t.filter(x=>x.status==="Not passed yet").length;
+    const prog = t.filter(x=>x.status==="In progress").length;
+    const bests = t.map(x=>frac(x.best)).filter(f=>f && f[1]);
+    const avg = bests.length ? Math.round(bests.reduce((s,f)=>s+f[0]/f[1],0)/bests.length*100)+"%" : "–";
+    $("kpis").innerHTML = [
+      [t.length,"Trainees"],[passed,"Passed final"],[notYet,"Not passed yet"],[prog,"Still in course"],[avg,"Avg best final"]
+    ].map(k=>'<div class="kpi"><b>'+esc(k[0])+'</b><span>'+k[1]+'</span></div>').join("");
+
+    const q = $("q").value.trim().toLowerCase(), f = $("f").value;
+    const rows = t.filter(x=> (!f || x.status===f) && (!q || (x.name+" "+x.email).toLowerCase().includes(q)));
+    $("rows").innerHTML = rows.length ? rows.map(x=>{
+      const cls = x.status==="Passed" ? "pass" : x.status==="Not passed yet" ? "fail" : "prog";
+      const m = frac(x.modules), pct = m && m[1] ? Math.round(m[0]/m[1]*100) : 0;
+      return '<tr><td><b>'+esc(x.name)+'</b><div class="sub">'+esc(x.email)+'</div></td>'+
+        '<td>'+esc(x.courseName||"")+'</td>'+
+        '<td><span class="pill '+cls+'">'+esc(x.status)+'</span>'+(x.passedOn?'<div class="sub">'+when(x.passedOn)+'</div>':'')+'</td>'+
+        '<td class="num">'+(x.best?'<b>'+esc(x.best)+'</b>'+(x.latest && x.latest!==x.best?'<div class="sub">latest '+esc(x.latest)+'</div>':''):'<span class="sub">not taken</span>')+'</td>'+
+        '<td class="num hide-sm">'+esc(x.attempts||0)+'</td>'+
+        '<td class="num">'+esc(x.modules)+'<div class="meter"><i style="width:'+pct+'%"></i></div></td>'+
+        '<td class="hide-sm"><b>'+esc(x.quizAvg||"–")+'</b><div class="detail">'+esc(x.quizDetail)+'</div></td>'+
+        '<td class="hide-sm num">'+when(x.last)+'</td></tr>';
+    }).join("") : '<tr><td colspan="8" class="empty">'+(t.length?"No trainees match.":"No one has started the course yet.")+'</td></tr>';
+  }
+
+  $("login").addEventListener("submit",e=>{ e.preventDefault(); setKey($("key").value.trim()); $("loginErr").hidden = true; load(); });
+  $("logout").addEventListener("click",()=>{ setKey(""); location.reload(); });
+  $("refresh").addEventListener("click",load);
+  $("q").addEventListener("input",()=> data && render());
+  $("f").addEventListener("change",()=> data && render());
+  $("c").addEventListener("change",()=> data && render());
+  load(); timer = setInterval(load, 60000);
+})();
+</script>
+</body>
+</html>
